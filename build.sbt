@@ -19,9 +19,10 @@ lazy val root = (project in file("."))
     crossPaths := false, // drop off Scala suffix from artifact names.
     autoScalaLibrary := false, // exclude scala-library from dependencies
     libraryDependencies ++= Seq(
-      "org.junit.jupiter"    % "junit-jupiter-engine" % junitVersion   % Test,
-      "org.junit.jupiter"    % "junit-jupiter-api"    % junitVersion   % Test,
-      "com.squareup.okhttp3" % "mockwebserver"        % okHttp3Version % Test,
+      "org.junit.jupiter"    % "junit-jupiter-engine" % junitVersion                     % Test,
+      "org.junit.jupiter"    % "junit-jupiter-api"    % junitVersion                     % Test,
+      "net.aichler"          % "jupiter-interface"    % JupiterKeys.jupiterVersion.value % Test,
+      "com.squareup.okhttp3" % "mockwebserver"        % okHttp3Version                   % Test,
       "com.squareup.okhttp3" % "okhttp"               % okHttp3Version
     ),
     spotlessJava := JavaConfig(
