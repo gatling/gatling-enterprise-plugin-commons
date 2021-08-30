@@ -55,7 +55,7 @@ public final class OkHttpEnterpriseClient implements EnterpriseClient {
 
   private Request uploadPackageRequest(UUID artifactId, File file) {
     HttpUrl url = uploadPackageUrl(artifactId, file);
-    RequestBody body = RequestBody.create(file, OCTET_STREAM_MEDIA_TYPE);
+    RequestBody body = RequestBody.create(OCTET_STREAM_MEDIA_TYPE, file);
     return new Request.Builder().url(url).put(body).header(AUTHORIZATION_HEADER, token).build();
   }
 
