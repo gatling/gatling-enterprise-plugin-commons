@@ -10,7 +10,7 @@ inScope(Global) {
 }
 
 val junitVersion = "5.7.2"
-val okHttp3Version = "3.14.9" // SBT plugins cannot depend on an higher version, see: https://github.com/sbt/sbt/issues/5569
+val okHttp3Version = "4.9.1" // SBT plugins cannot depend on an higher version, see: https://github.com/sbt/sbt/issues/5569
 
 lazy val root = (project in file("."))
   .enablePlugins(GatlingOssPlugin)
