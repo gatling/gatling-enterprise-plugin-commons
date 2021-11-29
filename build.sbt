@@ -9,7 +9,7 @@ inScope(Global) {
   )
 }
 
-val junitVersion = "5.8.1"
+val junitVersion = "5.8.2"
 val okHttp3Version = "4.9.3" // SBT plugins cannot depend on an higher version, see: https://github.com/sbt/sbt/issues/5569
 
 lazy val root = (project in file("."))
