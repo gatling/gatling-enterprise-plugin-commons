@@ -16,13 +16,13 @@
 
 package io.gatling.plugin.util;
 
-import java.io.File;
-import java.util.UUID;
-
-public interface EnterpriseClient {
-
-  void checkVersionSupport(String client, String version)
-      throws UnsupportedClientException, EnterpriseClientException;
-
-  long uploadPackage(UUID packageId, File file) throws EnterpriseClientException;
+public final class UnsupportedClientException extends Exception {
+  UnsupportedClientException(String client, String version) {
+    super(
+        "Client "
+            + client
+            + " version "
+            + version
+            + " is no longer supported; please upgrade to the latest version");
+  }
 }
