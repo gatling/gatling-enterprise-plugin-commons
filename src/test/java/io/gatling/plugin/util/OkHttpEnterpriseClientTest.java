@@ -92,18 +92,19 @@ public class OkHttpEnterpriseClientTest {
   @Test
   void UploadPackage_StatusEntityTooLarge_EnterpriseClientException() {
     UploadPackage_Status_EnterpriseClientException(
-        HttpURLConnection.HTTP_ENTITY_TOO_LARGE, "Package exceed maximum allowed size (5 Go)");
+        HttpURLConnection.HTTP_ENTITY_TOO_LARGE, "Package exceeds maximum allowed size (5 GB)");
   }
 
   @Test
   void UploadPackage_StatusUnauthorized_EnterpriseClientException() {
     UploadPackage_Status_EnterpriseClientException(
-        HttpURLConnection.HTTP_UNAUTHORIZED, "Insufficient permissions on token");
+        HttpURLConnection.HTTP_UNAUTHORIZED,
+        "Your API token was not recognized by the Gatling Enterprise server: please configure a valid token");
   }
 
   @Test
   void UploadPackage_StatusUnknown_EnterpriseClientException() {
     UploadPackage_Status_EnterpriseClientException(
-        666, "Unhandled response (status code: 666, body: )");
+        666, "Unhandled API response (status code: 666, body: )");
   }
 }
