@@ -18,11 +18,13 @@ package io.gatling.plugin.util;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import io.gatling.plugin.util.model.Simulation;
+import io.gatling.plugin.util.model.SimulationCreationPayload;
 import io.gatling.plugin.util.model.Simulations;
 import java.util.List;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 
 class SimulationsApiRequests extends AbstractApiRequests {
   SimulationsApiRequests(OkHttpClient okHttpClient, HttpUrl url, String token) {
@@ -39,5 +41,12 @@ class SimulationsApiRequests extends AbstractApiRequests {
               readResponseJson(response, new TypeReference<List<Simulation>>() {});
           return new Simulations(data);
         });
+  }
+
+  Simulation createSimulation(SimulationCreationPayload pkg) throws EnterpriseClientException {
+    HttpUrl requestUrl = url.newBuilder().addPathSegment("simulations").build();
+    RequestBody body = jsonRequestBody(pkg);
+    Request.Builder request = new Request.Builder().url(requestUrl).post(body);
+    return executeRequest(request, response -> readResponseJson(response, Simulation.class));
   }
 }
