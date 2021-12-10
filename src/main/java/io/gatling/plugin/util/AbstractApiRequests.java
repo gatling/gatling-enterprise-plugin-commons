@@ -26,6 +26,7 @@ import okhttp3.HttpUrl;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 
@@ -35,6 +36,7 @@ abstract class AbstractApiRequests {
 
   protected static final MediaType OCTET_STREAM_MEDIA_TYPE =
       MediaType.get("application/octet-stream");
+  protected static final MediaType JSON_MEDIA_TYPE = MediaType.get("application/json");
 
   protected final OkHttpClient okHttpClient;
   protected final HttpUrl url;
@@ -113,5 +115,15 @@ abstract class AbstractApiRequests {
     } catch (JsonProcessingException e) {
       throw new EnterpriseClientException("Unable to parse API response", e);
     }
+  }
+
+  RequestBody jsonRequestBody(Object obj) throws EnterpriseClientException {
+    final String json;
+    try {
+      json = JSON_MAPPER.writeValueAsString(obj);
+    } catch (JsonProcessingException e) {
+      throw new EnterpriseClientException("Unable to serialize object as JSON: " + obj);
+    }
+    return RequestBody.create(JSON_MEDIA_TYPE, json);
   }
 }

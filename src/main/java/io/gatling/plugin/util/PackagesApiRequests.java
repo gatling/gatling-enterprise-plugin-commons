@@ -16,6 +16,7 @@
 
 package io.gatling.plugin.util;
 
+import io.gatling.plugin.util.model.PackageCreationPayload;
 import io.gatling.plugin.util.model.Packages;
 import java.io.File;
 import java.net.HttpURLConnection;
@@ -35,6 +36,13 @@ class PackagesApiRequests extends AbstractApiRequests {
     HttpUrl requestUrl = url.newBuilder().addPathSegment("artifacts").build();
     Request.Builder request = new Request.Builder().url(requestUrl).get();
     return executeRequest(request, response -> readResponseJson(response, Packages.class));
+  }
+
+  Package createPackage(PackageCreationPayload pkg) throws EnterpriseClientException {
+    HttpUrl requestUrl = url.newBuilder().addPathSegment("artifacts").build();
+    RequestBody body = jsonRequestBody(pkg);
+    Request.Builder request = new Request.Builder().url(requestUrl).post(body);
+    return executeRequest(request, response -> readResponseJson(response, Package.class));
   }
 
   long uploadPackage(UUID packageId, File file) throws EnterpriseClientException {
