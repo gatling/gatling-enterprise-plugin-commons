@@ -23,7 +23,8 @@ lazy val root = (project in file("."))
       "org.junit.jupiter"    % "junit-jupiter-api"    % junitVersion                     % Test,
       "net.aichler"          % "jupiter-interface"    % JupiterKeys.jupiterVersion.value % Test,
       "com.squareup.okhttp3" % "mockwebserver"        % okHttp3Version                   % Test,
-      "com.squareup.okhttp3" % "okhttp"               % okHttp3Version
+      "com.squareup.okhttp3" % "okhttp"               % okHttp3Version,
+      "com.fasterxml.jackson.core" % "jackson-databind" % "2.13.0"
     ),
     spotlessJava := JavaConfig(
       googleJavaFormat = GoogleJavaFormatConfig()
