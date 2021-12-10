@@ -40,4 +40,19 @@ public class JsonMarshallingTest {
         "{\"name\":\"First package\",\"teamId\":\"2bc38879-6dd1-461d-a8fd-47df4991fd9b\"}";
     assertEquals(expectedWithSpecificTeam, actualWithSpecificTeam);
   }
+
+  @Test
+  public void SimulationCreationPayload_marshall() throws JsonProcessingException {
+    final SimulationCreationPayload simulation =
+        new SimulationCreationPayload(
+            "My Gatling Simulation",
+            UUID.fromString("2bc38879-6dd1-461d-a8fd-47df4991fd9b"),
+            "my.package.MyGatlingSimulation",
+            UUID.fromString("0cf26226-b261-4af6-a52a-1fec36f4394a"));
+    final String actual = JSON_MAPPER.writeValueAsString(simulation);
+    System.out.println(actual);
+    final String expected =
+        "{\"name\":\"My Gatling Simulation\",\"teamId\":\"2bc38879-6dd1-461d-a8fd-47df4991fd9b\",\"className\":\"my.package.MyGatlingSimulation\",\"build\":{\"artifactId\":\"0cf26226-b261-4af6-a52a-1fec36f4394a\"}}";
+    assertEquals(expected, actual);
+  }
 }
