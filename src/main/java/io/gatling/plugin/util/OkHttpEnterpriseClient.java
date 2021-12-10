@@ -25,11 +25,17 @@ public final class OkHttpEnterpriseClient implements EnterpriseClient {
 
   private final PrivateApiRequests privateApiRequests;
   private final PackagesApiRequests packagesApiRequests;
+  private final PoolsApiRequests poolsApiRequests;
+  private final SimulationsApiRequests simulationsApiRequests;
+  private final TeamsApiRequests teamsApiRequests;
 
   public OkHttpEnterpriseClient(OkHttpClient okHttpClient, URL url, String token) {
     final HttpUrl httpUrl = HttpUrl.get(url);
     this.privateApiRequests = new PrivateApiRequests(okHttpClient, httpUrl, token);
     this.packagesApiRequests = new PackagesApiRequests(okHttpClient, httpUrl, token);
+    this.poolsApiRequests = new PoolsApiRequests(okHttpClient, httpUrl, token);
+    this.simulationsApiRequests = new SimulationsApiRequests(okHttpClient, httpUrl, token);
+    this.teamsApiRequests = new TeamsApiRequests(okHttpClient, httpUrl, token);
   }
 
   public OkHttpEnterpriseClient(URL url, String token) {

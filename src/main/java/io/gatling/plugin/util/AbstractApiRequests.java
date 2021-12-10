@@ -16,6 +16,10 @@
 
 package io.gatling.plugin.util;
 
+import static io.gatling.plugin.util.JsonUtil.JSON_MAPPER;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import okhttp3.HttpUrl;
@@ -91,6 +95,23 @@ abstract class AbstractApiRequests {
     } catch (IOException e) {
       throw new EnterpriseClientException(
           "The Gatling Enterprise API returned an unreadable response");
+    }
+  }
+
+  <T> T readResponseJson(Response response, Class<T> valueType) throws EnterpriseClientException {
+    try {
+      return JSON_MAPPER.readValue(readResponseBody(response), valueType);
+    } catch (JsonProcessingException e) {
+      throw new EnterpriseClientException("Unable to parse API response", e);
+    }
+  }
+
+  <T> T readResponseJson(Response response, TypeReference<T> valueTypeRef)
+      throws EnterpriseClientException {
+    try {
+      return JSON_MAPPER.readValue(readResponseBody(response), valueTypeRef);
+    } catch (JsonProcessingException e) {
+      throw new EnterpriseClientException("Unable to parse API response", e);
     }
   }
 }
