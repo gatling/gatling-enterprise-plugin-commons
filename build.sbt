@@ -1,4 +1,4 @@
-import net.moznion.sbt.spotless.config.{ GoogleJavaFormatConfig, JavaConfig }
+import net.moznion.sbt.spotless.config.{ GoogleJavaFormatConfig, JavaConfig, SpotlessConfig }
 
 inScope(Global) {
   Seq(
@@ -19,14 +19,17 @@ lazy val root = (project in file("."))
     crossPaths := false, // drop off Scala suffix from artifact names.
     autoScalaLibrary := false, // exclude scala-library from dependencies
     libraryDependencies ++= Seq(
-      "org.junit.jupiter"    % "junit-jupiter-engine" % junitVersion                     % Test,
-      "org.junit.jupiter"    % "junit-jupiter-api"    % junitVersion                     % Test,
-      "net.aichler"          % "jupiter-interface"    % JupiterKeys.jupiterVersion.value % Test,
-      "com.squareup.okhttp3" % "mockwebserver"        % okHttp3Version                   % Test,
-      "com.squareup.okhttp3" % "okhttp"               % okHttp3Version,
-      "com.fasterxml.jackson.core" % "jackson-databind" % "2.13.0"
+      "org.junit.jupiter"          % "junit-jupiter-engine" % junitVersion                     % Test,
+      "org.junit.jupiter"          % "junit-jupiter-api"    % junitVersion                     % Test,
+      "net.aichler"                % "jupiter-interface"    % JupiterKeys.jupiterVersion.value % Test,
+      "com.squareup.okhttp3"       % "mockwebserver"        % okHttp3Version                   % Test,
+      "com.squareup.okhttp3"       % "okhttp"               % okHttp3Version,
+      "com.fasterxml.jackson.core" % "jackson-databind"     % "2.13.0"
     ),
     spotlessJava := JavaConfig(
       googleJavaFormat = GoogleJavaFormatConfig()
+    ),
+    spotless := SpotlessConfig(
+      applyOnCompile = !sys.env.getOrElse("CI", "false").toBoolean
     )
   )
