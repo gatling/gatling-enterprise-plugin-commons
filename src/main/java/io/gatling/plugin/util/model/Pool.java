@@ -21,7 +21,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 import java.util.UUID;
 
-public class Pool {
+public final class Pool {
   public final UUID id;
   public final String name;
 

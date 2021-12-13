@@ -20,6 +20,8 @@ import static io.gatling.plugin.util.JsonUtil.JSON_MAPPER;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
@@ -50,9 +52,20 @@ public class JsonMarshallingTest {
             "my.package.MyGatlingSimulation",
             UUID.fromString("0cf26226-b261-4af6-a52a-1fec36f4394a"));
     final String actual = JSON_MAPPER.writeValueAsString(simulation);
-    System.out.println(actual);
     final String expected =
         "{\"name\":\"My Gatling Simulation\",\"teamId\":\"2bc38879-6dd1-461d-a8fd-47df4991fd9b\",\"className\":\"my.package.MyGatlingSimulation\",\"build\":{\"artifactId\":\"0cf26226-b261-4af6-a52a-1fec36f4394a\"}}";
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  public void SystemPropertyList_marshall() throws JsonProcessingException {
+    final List<SystemProperty> simulation =
+        Arrays.asList(
+            new SystemProperty("Property 1", "Value 1"),
+            new SystemProperty("Property 2", "Value 2"));
+    final String actual = JSON_MAPPER.writeValueAsString(simulation);
+    final String expected =
+        "[{\"key\":\"Property 1\",\"value\":\"Value 1\"},{\"key\":\"Property 2\",\"value\":\"Value 2\"}]";
     assertEquals(expected, actual);
   }
 }

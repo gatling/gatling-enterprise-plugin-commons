@@ -21,7 +21,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import java.util.Objects;
 
-public class Simulations {
+public final class Simulations {
   public final List<Simulation> data;
 
   @JsonCreator
