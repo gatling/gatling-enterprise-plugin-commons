@@ -65,9 +65,10 @@ class SimulationsApiRequests extends AbstractApiRequests {
         });
   }
 
-  Simulation createSimulation(SimulationCreationPayload pkg) throws EnterpriseClientException {
+  Simulation createSimulation(SimulationCreationPayload simulation)
+      throws EnterpriseClientException {
     HttpUrl requestUrl = url.newBuilder().addPathSegment("simulations").build();
-    RequestBody body = jsonRequestBody(pkg);
+    RequestBody body = jsonRequestBody(simulation);
     Request.Builder request = new Request.Builder().url(requestUrl).post(body);
     return executeRequest(request, response -> readResponseJson(response, Simulation.class));
   }
