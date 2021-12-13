@@ -21,12 +21,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import java.util.Objects;
 
+import static io.gatling.plugin.util.ObjectsUtil.nonNullParam;
+
 public final class Simulations {
   public final List<Simulation> data;
 
   @JsonCreator
   public Simulations(@JsonProperty(value = "data", required = true) List<Simulation> data) {
-    Objects.requireNonNull(data, "Property 'data' is required");
+    nonNullParam(data, "data");
     this.data = data;
   }
 

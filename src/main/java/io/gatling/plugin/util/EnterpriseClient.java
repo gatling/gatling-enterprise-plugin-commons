@@ -24,14 +24,32 @@ import java.util.UUID;
 
 public interface EnterpriseClient {
 
+  /**
+   * @param client Required
+   * @param version Required
+   */
   void checkVersionSupport(String client, String version)
       throws UnsupportedClientException, EnterpriseClientException;
 
+  /**
+   * @param packageId Required
+   * @param file Path to the packaged JAR file to upload; required
+   */
   long uploadPackage(UUID packageId, File file) throws EnterpriseClientException;
 
+  /**
+   * @param simulationId Required
+   * @param systemProperties Required (can be an empty map)
+   * @param file Path to the packaged JAR file to upload and run; required
+   */
   RunSummary startSimulation(UUID simulationId, Map<String, String> systemProperties, File file)
       throws EnterpriseClientException;
 
+  /**
+   * @param groupId Optional
+   * @param artifactId Required
+   * @param className Required
+   */
   Simulation createSimulation(String groupId, String artifactId, String className)
       throws EnterpriseClientException;
 }

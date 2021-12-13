@@ -21,6 +21,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 import java.util.UUID;
 
+import static io.gatling.plugin.util.ObjectsUtil.nonNullParam;
+
 public final class RunSummary {
   public final UUID runId;
   public final String className;
@@ -31,9 +33,9 @@ public final class RunSummary {
       @JsonProperty(value = "runId", required = true) UUID runId,
       @JsonProperty(value = "className", required = true) String className,
       @JsonProperty(value = "reportsPath", required = true) String reportsPath) {
-    Objects.requireNonNull(runId, "Property 'runId' is required");
-    Objects.requireNonNull(className, "Property 'className' is required");
-    Objects.requireNonNull(reportsPath, "Property 'reportsPath' is required");
+    nonNullParam(runId, "runId");
+    nonNullParam(className, "className");
+    nonNullParam(reportsPath, "reportsPath");
     this.runId = runId;
     this.className = className;
     this.reportsPath = reportsPath;

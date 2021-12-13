@@ -26,6 +26,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
+import static io.gatling.plugin.util.ObjectsUtil.nonNullParam;
+
 public final class SimulationCreationPayload {
 
   public final String name;
@@ -33,7 +35,7 @@ public final class SimulationCreationPayload {
   public final String className;
 
   @JsonProperty(value = "build")
-  @JsonSerialize(using = ArtifactIdJsonSerializer.class)
+  @JsonSerialize(using = PkgIdJsonSerializer.class)
   public final UUID pkgId;
 
   public final String jvmOptions;
@@ -56,13 +58,13 @@ public final class SimulationCreationPayload {
       Map<UUID, HostByPool> hostsByPool,
       boolean usePoolWeights,
       boolean usePoolDedicatedIps) {
-    Objects.requireNonNull(name, "Property 'name' is required");
-    Objects.requireNonNull(teamId, "Property 'teamId' is required");
-    Objects.requireNonNull(className, "Property 'className' is required");
-    Objects.requireNonNull(pkgId, "Property 'pkgId' is required");
-    Objects.requireNonNull(systemProperties, "Property 'systemProperties' is required");
-    Objects.requireNonNull(meaningfulTimeWindow, "Property 'meaningfulTimeWindow' is required");
-    Objects.requireNonNull(hostsByPool, "Property 'hostsByPool' is required");
+    nonNullParam(name, "name");
+    nonNullParam(teamId, "teamId");
+    nonNullParam(className, "className");
+    nonNullParam(pkgId, "pkgId");
+    nonNullParam(systemProperties, "systemProperties");
+    nonNullParam(meaningfulTimeWindow, "meaningfulTimeWindow");
+    nonNullParam(hostsByPool, "hostsByPool");
 
     this.name = name;
     this.teamId = teamId;
@@ -118,7 +120,7 @@ public final class SimulationCreationPayload {
         name, teamId, className, pkgId);
   }
 
-  private static final class ArtifactIdJsonSerializer extends JsonSerializer<UUID> {
+  private static final class PkgIdJsonSerializer extends JsonSerializer<UUID> {
     @Override
     public void serialize(UUID value, JsonGenerator gen, SerializerProvider serializers)
         throws IOException {
