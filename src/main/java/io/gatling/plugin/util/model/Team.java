@@ -21,7 +21,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 import java.util.UUID;
 
-public class Team {
+public final class Team {
   public final UUID id;
   public final String name;
 

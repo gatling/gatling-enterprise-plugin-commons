@@ -16,35 +16,34 @@
 
 package io.gatling.plugin.util.model;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.List;
 import java.util.Objects;
 
-public final class Pools {
-  public final List<Pool> data;
+public final class SystemProperty {
+  public final String key;
+  public final String value;
 
-  @JsonCreator
-  public Pools(@JsonProperty(value = "data", required = true) List<Pool> data) {
-    Objects.requireNonNull(data, "Property 'data' is required");
-    this.data = data;
+  public SystemProperty(String key, String value) {
+    Objects.requireNonNull(key, "Property 'key' is required");
+    Objects.requireNonNull(value, "Property 'value' is required");
+    this.key = key;
+    this.value = value;
   }
 
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-    Pools pools = (Pools) o;
-    return data.equals(pools.data);
+    SystemProperty that = (SystemProperty) o;
+    return key.equals(that.key) && value.equals(that.value);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(data);
+    return Objects.hash(key, value);
   }
 
   @Override
   public String toString() {
-    return String.format("Pools{data=%s}", data);
+    return String.format("SystemProperty{key='%s',value='%s'}", key, value);
   }
 }

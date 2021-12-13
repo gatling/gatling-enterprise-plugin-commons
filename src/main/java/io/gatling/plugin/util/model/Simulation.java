@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
-public class Simulation {
+public final class Simulation {
 
   public final UUID id;
   public final String name;

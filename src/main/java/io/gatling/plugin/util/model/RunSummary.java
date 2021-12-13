@@ -18,33 +18,45 @@ package io.gatling.plugin.util.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
-public final class Pools {
-  public final List<Pool> data;
+public final class RunSummary {
+  public final UUID runId;
+  public final String className;
+  public final String reportsUrl;
 
   @JsonCreator
-  public Pools(@JsonProperty(value = "data", required = true) List<Pool> data) {
-    Objects.requireNonNull(data, "Property 'data' is required");
-    this.data = data;
+  public RunSummary(
+      @JsonProperty(value = "runId", required = true) UUID runId,
+      @JsonProperty(value = "className", required = true) String className,
+      @JsonProperty(value = "reportsUrl", required = true) String reportsUrl) {
+    Objects.requireNonNull(runId, "Property 'runId' is required");
+    Objects.requireNonNull(className, "Property 'className' is required");
+    Objects.requireNonNull(reportsUrl, "Property 'reportsUrl' is required");
+    this.runId = runId;
+    this.className = className;
+    this.reportsUrl = reportsUrl;
   }
 
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-    Pools pools = (Pools) o;
-    return data.equals(pools.data);
+    RunSummary that = (RunSummary) o;
+    return runId.equals(that.runId)
+        && className.equals(that.className)
+        && reportsUrl.equals(that.reportsUrl);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(data);
+    return Objects.hash(runId, className, reportsUrl);
   }
 
   @Override
   public String toString() {
-    return String.format("Pools{data=%s}", data);
+    return String.format(
+        "RunSummary{runId='%s',className='%s',reportsUrl='%s'}", runId, className, reportsUrl);
   }
 }

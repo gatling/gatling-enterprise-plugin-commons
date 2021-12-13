@@ -16,8 +16,12 @@
 
 package io.gatling.plugin.util;
 
+import io.gatling.plugin.util.model.RunSummary;
+import io.gatling.plugin.util.model.Simulation;
+import io.gatling.plugin.util.model.SystemProperty;
 import java.io.File;
 import java.net.URL;
+import java.util.List;
 import java.util.UUID;
 import okhttp3.*;
 
@@ -50,6 +54,20 @@ public final class OkHttpEnterpriseClient implements EnterpriseClient {
 
   @Override
   public long uploadPackage(UUID packageId, File file) throws EnterpriseClientException {
+    return doUploadPackage(packageId, file);
+  }
+
+  @Override
+  public RunSummary startSimulation(
+      UUID simulationId, List<SystemProperty> systemProperties, File file)
+      throws EnterpriseClientException {
+    final Simulation simulation = simulationsApiRequests.getSimulation(simulationId);
+    doUploadPackage(simulation.artifactId, file);
+    return simulationsApiRequests.startSimulation(simulationId, systemProperties);
+  }
+
+  private long doUploadPackage(UUID packageId, File file) throws EnterpriseClientException {
+    // TODO MISC-293 Add checksum verification to avoid unnecessary uploads
     return packagesApiRequests.uploadPackage(packageId, file);
   }
 }

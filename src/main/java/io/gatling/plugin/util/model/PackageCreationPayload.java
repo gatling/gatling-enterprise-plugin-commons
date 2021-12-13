@@ -19,7 +19,7 @@ package io.gatling.plugin.util.model;
 import java.util.Objects;
 import java.util.UUID;
 
-public class PackageCreationPayload {
+public final class PackageCreationPayload {
   public final String name;
   public final UUID teamId;
 

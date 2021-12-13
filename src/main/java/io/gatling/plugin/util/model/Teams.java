@@ -21,7 +21,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import java.util.Objects;
 
-public class Teams {
+public final class Teams {
   public final List<Team> data;
 
   @JsonCreator

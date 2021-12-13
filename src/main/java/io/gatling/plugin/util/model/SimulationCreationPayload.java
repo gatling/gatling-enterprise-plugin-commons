@@ -25,7 +25,7 @@ import java.io.IOException;
 import java.util.Objects;
 import java.util.UUID;
 
-public class SimulationCreationPayload {
+public final class SimulationCreationPayload {
 
   public final String name;
   public final UUID teamId;
