@@ -21,10 +21,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 import java.util.UUID;
 
+import static io.gatling.plugin.util.ObjectsUtil.nonNullParam;
+
 public final class Package {
   public final UUID id;
+  /** Optional. */
   public final UUID teamId;
   public final String name;
+  /** Optional. */
   public final String fileName;
 
   @JsonCreator
@@ -33,8 +37,8 @@ public final class Package {
       @JsonProperty(value = "teamId") UUID teamId,
       @JsonProperty(value = "name", required = true) String name,
       @JsonProperty(value = "fileName") String fileName) {
-    Objects.requireNonNull(id, "Property 'id' is required");
-    Objects.requireNonNull(name, "Property 'name' is required");
+    nonNullParam(id, "id");
+    nonNullParam(name, "name");
     this.id = id;
     this.teamId = teamId;
     this.name = name;

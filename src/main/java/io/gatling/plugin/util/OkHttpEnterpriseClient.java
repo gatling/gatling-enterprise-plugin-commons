@@ -16,6 +16,9 @@
 
 package io.gatling.plugin.util;
 
+import static io.gatling.plugin.util.ObjectsUtil.nonEmptyParam;
+import static io.gatling.plugin.util.ObjectsUtil.nonNullParam;
+
 import io.gatling.plugin.util.model.*;
 import io.gatling.plugin.util.model.Package;
 import java.io.File;
@@ -40,7 +43,16 @@ public final class OkHttpEnterpriseClient implements EnterpriseClient {
   private final TeamsApiRequests teamsApiRequests;
 
   public OkHttpEnterpriseClient(OkHttpClient okHttpClient, URL url, String token) {
+    nonNullParam(okHttpClient, "okHttpClient");
+    nonNullParam(url, "url");
+    nonEmptyParam(token, "token");
+
     final HttpUrl httpUrl = HttpUrl.get(url);
+    if (httpUrl == null) {
+      throw new IllegalArgumentException(
+          String.format("'%s' is not a valid HTTP or HTTPS URL", url));
+    }
+
     this.privateApiRequests = new PrivateApiRequests(okHttpClient, httpUrl, token);
     this.packagesApiRequests = new PackagesApiRequests(okHttpClient, httpUrl, token);
     this.poolsApiRequests = new PoolsApiRequests(okHttpClient, httpUrl, token);
@@ -55,11 +67,15 @@ public final class OkHttpEnterpriseClient implements EnterpriseClient {
   @Override
   public void checkVersionSupport(String client, String version)
       throws UnsupportedClientException, EnterpriseClientException {
+    nonEmptyParam(client, "client");
+    nonEmptyParam(version, "version");
     privateApiRequests.checkVersionSupport(client, version);
   }
 
   @Override
   public long uploadPackage(UUID packageId, File file) throws EnterpriseClientException {
+    nonNullParam(packageId, "packageId");
+    nonNullParam(file, "file");
     return doUploadPackage(packageId, file);
   }
 
@@ -67,6 +83,9 @@ public final class OkHttpEnterpriseClient implements EnterpriseClient {
   public RunSummary startSimulation(
       UUID simulationId, Map<String, String> systemProperties, File file)
       throws EnterpriseClientException {
+    nonNullParam(simulationId, "simulationId");
+    nonNullParam(systemProperties, "systemProperties");
+    nonNullParam(file, "file");
 
     final List<SystemProperty> sysPropsList =
         systemProperties.entrySet().stream()
@@ -81,6 +100,9 @@ public final class OkHttpEnterpriseClient implements EnterpriseClient {
   @Override
   public Simulation createSimulation(String groupId, String artifactId, String className)
       throws EnterpriseClientException {
+    nonEmptyParam(artifactId, "artifactId");
+    nonEmptyParam(className, "className");
+
     final String packageName = groupId != null ? groupId + ":" + artifactId : artifactId;
     final String[] classNameParts = className.split("\\.");
     final String simulationName = classNameParts[classNameParts.length - 1];

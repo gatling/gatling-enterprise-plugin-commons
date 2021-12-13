@@ -21,6 +21,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 import java.util.UUID;
 
+import static io.gatling.plugin.util.ObjectsUtil.nonNullParam;
+
 public final class Team {
   public final UUID id;
   public final String name;
@@ -29,8 +31,8 @@ public final class Team {
   public Team(
       @JsonProperty(value = "id", required = true) UUID id,
       @JsonProperty(value = "name", required = true) String name) {
-    Objects.requireNonNull(id, "Property 'id' is required");
-    Objects.requireNonNull(name, "Property 'name' is required");
+    nonNullParam(id, "id");
+    nonNullParam(name, "name");
     this.id = id;
     this.name = name;
   }
