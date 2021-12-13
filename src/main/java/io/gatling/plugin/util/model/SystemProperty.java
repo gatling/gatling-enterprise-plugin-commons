@@ -18,13 +18,15 @@ package io.gatling.plugin.util.model;
 
 import java.util.Objects;
 
+import static io.gatling.plugin.util.ObjectsUtil.nonNullParam;
+
 public final class SystemProperty {
   public final String key;
   public final String value;
 
   public SystemProperty(String key, String value) {
-    Objects.requireNonNull(key, "Property 'key' is required");
-    Objects.requireNonNull(value, "Property 'value' is required");
+    nonNullParam(key, "key");
+    nonNullParam(value, "value");
     this.key = key;
     this.value = value;
   }

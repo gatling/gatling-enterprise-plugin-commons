@@ -19,12 +19,15 @@ package io.gatling.plugin.util.model;
 import java.util.Objects;
 import java.util.UUID;
 
+import static io.gatling.plugin.util.ObjectsUtil.nonNullParam;
+
 public final class PackageCreationPayload {
   public final String name;
+  /** Optional. */
   public final UUID teamId;
 
   public PackageCreationPayload(String name, UUID teamId) {
-    Objects.requireNonNull(name, "Property 'name' is required");
+    nonNullParam(name, "name");
     this.name = name;
     this.teamId = teamId;
   }

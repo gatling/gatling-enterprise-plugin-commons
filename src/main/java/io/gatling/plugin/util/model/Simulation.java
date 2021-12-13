@@ -22,6 +22,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
+import static io.gatling.plugin.util.ObjectsUtil.nonNullParam;
+
 public final class Simulation {
 
   public final UUID id;
@@ -31,11 +33,11 @@ public final class Simulation {
   public final UUID pkgId;
 
   public Simulation(UUID id, String name, UUID teamId, String className, UUID pkgId) {
-    Objects.requireNonNull(id, "Property 'id' is required");
-    Objects.requireNonNull(name, "Property 'name' is required");
-    Objects.requireNonNull(teamId, "Property 'teamId' is required");
-    Objects.requireNonNull(className, "Property 'className' is required");
-    Objects.requireNonNull(pkgId, "Property 'pkgId' is required");
+    nonNullParam(id, "id");
+    nonNullParam(name, "name");
+    nonNullParam(teamId, "teamId");
+    nonNullParam(className, "className");
+    nonNullParam(pkgId, "pkgId");
     this.id = id;
     this.name = name;
     this.teamId = teamId;

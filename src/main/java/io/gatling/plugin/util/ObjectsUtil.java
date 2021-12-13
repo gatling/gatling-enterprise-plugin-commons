@@ -16,15 +16,19 @@
 
 package io.gatling.plugin.util;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Objects;
 
-public final class JsonUtil {
-  private JsonUtil() {}
+public final class ObjectsUtil {
+  private ObjectsUtil() {}
 
-  public static final ObjectMapper JSON_MAPPER =
-      new ObjectMapper()
-          .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-          .setSerializationInclusion(JsonInclude.Include.NON_NULL);
+  public static <T> void nonNullParam(T param, String name) {
+    Objects.requireNonNull(param, "Parameter '" + name + "' is required");
+  }
+
+  public static void nonEmptyParam(String param, String name) {
+    Objects.requireNonNull(param, "Parameter '" + name + "' is required");
+    if (param.isEmpty()) {
+      throw new IllegalArgumentException("Parameter '" + name + "' must not be empty");
+    }
+  }
 }
