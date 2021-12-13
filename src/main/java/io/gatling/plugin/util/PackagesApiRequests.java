@@ -16,6 +16,7 @@
 
 package io.gatling.plugin.util;
 
+import io.gatling.plugin.util.model.Package;
 import io.gatling.plugin.util.model.PackageCreationPayload;
 import io.gatling.plugin.util.model.Packages;
 import java.io.File;

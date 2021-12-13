@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import java.io.IOException;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -35,15 +36,45 @@ public final class SimulationCreationPayload {
   @JsonSerialize(using = ArtifactIdJsonSerializer.class)
   public final UUID pkgId;
 
-  public SimulationCreationPayload(String name, UUID teamId, String className, UUID pkgId) {
+  public final String jvmOptions;
+  public final Map<String, String> systemProperties;
+  public final boolean ignoreGlobalProperties;
+  public final MeaningfulTimeWindow meaningfulTimeWindow;
+  public final Map<UUID, HostByPool> hostsByPool;
+  public final boolean usePoolWeights;
+  public final boolean usePoolDedicatedIps;
+
+  public SimulationCreationPayload(
+      String name,
+      UUID teamId,
+      String className,
+      UUID pkgId,
+      String jvmOptions,
+      Map<String, String> systemProperties,
+      boolean ignoreGlobalProperties,
+      MeaningfulTimeWindow meaningfulTimeWindow,
+      Map<UUID, HostByPool> hostsByPool,
+      boolean usePoolWeights,
+      boolean usePoolDedicatedIps) {
     Objects.requireNonNull(name, "Property 'name' is required");
     Objects.requireNonNull(teamId, "Property 'teamId' is required");
     Objects.requireNonNull(className, "Property 'className' is required");
     Objects.requireNonNull(pkgId, "Property 'pkgId' is required");
+    Objects.requireNonNull(systemProperties, "Property 'systemProperties' is required");
+    Objects.requireNonNull(meaningfulTimeWindow, "Property 'meaningfulTimeWindow' is required");
+    Objects.requireNonNull(hostsByPool, "Property 'hostsByPool' is required");
+
     this.name = name;
     this.teamId = teamId;
     this.className = className;
     this.pkgId = pkgId;
+    this.jvmOptions = jvmOptions;
+    this.systemProperties = systemProperties;
+    this.ignoreGlobalProperties = ignoreGlobalProperties;
+    this.meaningfulTimeWindow = meaningfulTimeWindow;
+    this.hostsByPool = hostsByPool;
+    this.usePoolWeights = usePoolWeights;
+    this.usePoolDedicatedIps = usePoolDedicatedIps;
   }
 
   @Override
@@ -51,15 +82,33 @@ public final class SimulationCreationPayload {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     SimulationCreationPayload that = (SimulationCreationPayload) o;
-    return name.equals(that.name)
+    return ignoreGlobalProperties == that.ignoreGlobalProperties
+        && usePoolWeights == that.usePoolWeights
+        && usePoolDedicatedIps == that.usePoolDedicatedIps
+        && name.equals(that.name)
         && teamId.equals(that.teamId)
         && className.equals(that.className)
-        && pkgId.equals(that.pkgId);
+        && pkgId.equals(that.pkgId)
+        && Objects.equals(jvmOptions, that.jvmOptions)
+        && systemProperties.equals(that.systemProperties)
+        && meaningfulTimeWindow.equals(that.meaningfulTimeWindow)
+        && hostsByPool.equals(that.hostsByPool);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(name, teamId, className, pkgId);
+    return Objects.hash(
+        name,
+        teamId,
+        className,
+        pkgId,
+        jvmOptions,
+        systemProperties,
+        ignoreGlobalProperties,
+        meaningfulTimeWindow,
+        hostsByPool,
+        usePoolWeights,
+        usePoolDedicatedIps);
   }
 
   @Override

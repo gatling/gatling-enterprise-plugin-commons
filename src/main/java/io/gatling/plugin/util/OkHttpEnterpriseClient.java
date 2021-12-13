@@ -16,11 +16,12 @@
 
 package io.gatling.plugin.util;
 
-import io.gatling.plugin.util.model.RunSummary;
-import io.gatling.plugin.util.model.Simulation;
-import io.gatling.plugin.util.model.SystemProperty;
+import io.gatling.plugin.util.model.*;
+import io.gatling.plugin.util.model.Package;
 import java.io.File;
 import java.net.URL;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -28,6 +29,9 @@ import java.util.stream.Collectors;
 import okhttp3.*;
 
 public final class OkHttpEnterpriseClient implements EnterpriseClient {
+
+  private static final Map<String, String> DEFAULT_SYSTEM_PROPERTIES = Collections.emptyMap();
+  private static final MeaningfulTimeWindow DEFAULT_TIME_WINDOW = new MeaningfulTimeWindow(0, 0);
 
   private final PrivateApiRequests privateApiRequests;
   private final PackagesApiRequests packagesApiRequests;
@@ -72,6 +76,51 @@ public final class OkHttpEnterpriseClient implements EnterpriseClient {
     final Simulation simulation = simulationsApiRequests.getSimulation(simulationId);
     doUploadPackage(simulation.pkgId, file);
     return simulationsApiRequests.startSimulation(simulationId, sysPropsList);
+  }
+
+  @Override
+  public Simulation createSimulation(String groupId, String artifactId, String className)
+      throws EnterpriseClientException {
+    final String packageName = groupId != null ? groupId + ":" + artifactId : artifactId;
+    final String[] classNameParts = className.split("\\.");
+    final String simulationName = classNameParts[classNameParts.length - 1];
+
+    final Teams teams = teamsApiRequests.listTeams();
+    final Team team;
+    if (teams.data.size() == 1) {
+      team = teams.data.get(0);
+    } else {
+      throw new EnterpriseClientException(
+          "Cannot automatically create a simulation if several teams are available");
+    }
+
+    final Pools pools = poolsApiRequests.listPools();
+    final Pool pool;
+    if (pools.data.size() > 0) {
+      pool = pools.data.get(0);
+    } else {
+      throw new EnterpriseClientException(
+          "Cannot automatically create a simulation if no pool is available");
+    }
+
+    final Package pkg =
+        packagesApiRequests.createPackage(new PackageCreationPayload(packageName, team.id));
+
+    final Map<UUID, HostByPool> hostsByPool = new HashMap<>();
+    hostsByPool.put(pool.id, new HostByPool(1, 0));
+    return simulationsApiRequests.createSimulation(
+        new SimulationCreationPayload(
+            simulationName,
+            team.id,
+            className,
+            pkg.id,
+            /* jvmOptions */ null,
+            DEFAULT_SYSTEM_PROPERTIES,
+            /* ignoreGlobalProperties */ false,
+            DEFAULT_TIME_WINDOW,
+            hostsByPool,
+            /* usePoolWeights */ false,
+            /* usePoolDedicatedIps */ false));
   }
 
   private long doUploadPackage(UUID packageId, File file) throws EnterpriseClientException {

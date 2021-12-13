@@ -17,6 +17,7 @@
 package io.gatling.plugin.util;
 
 import io.gatling.plugin.util.model.RunSummary;
+import io.gatling.plugin.util.model.Simulation;
 import java.io.File;
 import java.util.Map;
 import java.util.UUID;
@@ -29,5 +30,8 @@ public interface EnterpriseClient {
   long uploadPackage(UUID packageId, File file) throws EnterpriseClientException;
 
   RunSummary startSimulation(UUID simulationId, Map<String, String> systemProperties, File file)
+      throws EnterpriseClientException;
+
+  Simulation createSimulation(String groupId, String artifactId, String className)
       throws EnterpriseClientException;
 }
