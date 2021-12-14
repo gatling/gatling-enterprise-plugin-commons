@@ -16,6 +16,9 @@
 
 package io.gatling.plugin.util;
 
+import io.gatling.plugin.util.exceptions.EnterpriseClientException;
+import io.gatling.plugin.util.exceptions.InvalidApiCallException;
+import io.gatling.plugin.util.exceptions.PackageNotFoundException;
 import io.gatling.plugin.util.model.Package;
 import io.gatling.plugin.util.model.PackageCreationPayload;
 import io.gatling.plugin.util.model.Packages;
@@ -53,11 +56,10 @@ class PackagesApiRequests extends AbstractApiRequests {
         response -> file.length(),
         response -> {
           if (response.code() == HttpURLConnection.HTTP_ENTITY_TOO_LARGE) {
-            throw new EnterpriseClientException("Package exceeds maximum allowed size (5 GB)");
+            throw new InvalidApiCallException("Package exceeds maximum allowed size (5 GB)");
           }
           if (response.code() == HttpURLConnection.HTTP_NOT_FOUND) {
-            throw new EnterpriseClientException(
-                String.format("Package with id %s does not exist", packageId));
+            throw new PackageNotFoundException(packageId);
           }
         });
   }

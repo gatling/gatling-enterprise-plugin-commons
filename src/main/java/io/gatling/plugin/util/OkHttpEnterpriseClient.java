@@ -19,6 +19,8 @@ package io.gatling.plugin.util;
 import static io.gatling.plugin.util.ObjectsUtil.nonEmptyParam;
 import static io.gatling.plugin.util.ObjectsUtil.nonNullParam;
 
+import io.gatling.plugin.util.exceptions.EnterpriseClientException;
+import io.gatling.plugin.util.exceptions.UnsupportedClientException;
 import io.gatling.plugin.util.model.*;
 import io.gatling.plugin.util.model.Package;
 import java.io.File;
@@ -112,8 +114,8 @@ public final class OkHttpEnterpriseClient implements EnterpriseClient {
     if (teams.data.size() == 1) {
       team = teams.data.get(0);
     } else {
-      throw new EnterpriseClientException(
-          "Cannot automatically create a simulation if several teams are available");
+      throw new UnsupportedOperationException(
+          "Cannot automatically create a simulation if several teams are available (configuration prompts will be added in a later plugin version)");
     }
 
     final Pools pools = poolsApiRequests.listPools();
@@ -121,7 +123,8 @@ public final class OkHttpEnterpriseClient implements EnterpriseClient {
     if (pools.data.size() > 0) {
       pool = pools.data.get(0);
     } else {
-      throw new EnterpriseClientException(
+      // Should never happen on Gatling Enterprise Cloud
+      throw new IllegalStateException(
           "Cannot automatically create a simulation if no pool is available");
     }
 

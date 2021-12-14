@@ -18,7 +18,13 @@ package io.gatling.plugin.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import io.gatling.plugin.util.exceptions.EnterpriseClientException;
+import io.gatling.plugin.util.exceptions.InvalidApiCallException;
+import io.gatling.plugin.util.exceptions.PackageNotFoundException;
+import io.gatling.plugin.util.exceptions.UnauthorizedApiCallException;
+import io.gatling.plugin.util.exceptions.UnhandledApiCallException;
 import java.io.File;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -72,39 +78,39 @@ public class OkHttpEnterpriseClientTest {
         ARTIFACT_FILE.length(), Long.valueOf(server.takeRequest().getHeader("Content-Length")));
   }
 
-  private void UploadPackage_Status_EnterpriseClientException(int code, String message) {
+  private EnterpriseClientException UploadPackage_Status_EnterpriseClientException(int code) {
     MockWebServer server = mockWebServer(new MockResponse().setResponseCode(code));
     OkHttpEnterpriseClient client = okHttpEnterpriseClientMockWebServer(server);
-    EnterpriseClientException exception =
-        assertThrows(
-            EnterpriseClientException.class,
-            () -> client.uploadPackage(ARTIFACT_ID, ARTIFACT_FILE));
-    assertEquals(message, exception.getMessage());
+    return assertThrows(
+        EnterpriseClientException.class, () -> client.uploadPackage(ARTIFACT_ID, ARTIFACT_FILE));
   }
 
   @Test
   void UploadPackage_StatusNotFound_EnterpriseClientException() {
-    UploadPackage_Status_EnterpriseClientException(
-        HttpURLConnection.HTTP_NOT_FOUND,
-        String.format("Package with id %s does not exist", ARTIFACT_ID));
+    EnterpriseClientException e =
+        UploadPackage_Status_EnterpriseClientException(HttpURLConnection.HTTP_NOT_FOUND);
+    assertTrue(e instanceof PackageNotFoundException);
   }
 
   @Test
   void UploadPackage_StatusEntityTooLarge_EnterpriseClientException() {
-    UploadPackage_Status_EnterpriseClientException(
-        HttpURLConnection.HTTP_ENTITY_TOO_LARGE, "Package exceeds maximum allowed size (5 GB)");
+    EnterpriseClientException e =
+        UploadPackage_Status_EnterpriseClientException(HttpURLConnection.HTTP_ENTITY_TOO_LARGE);
+    assertTrue(e instanceof InvalidApiCallException);
+    assertTrue(e.getMessage().contains("Package exceeds maximum allowed size (5 GB)"));
   }
 
   @Test
   void UploadPackage_StatusUnauthorized_EnterpriseClientException() {
-    UploadPackage_Status_EnterpriseClientException(
-        HttpURLConnection.HTTP_UNAUTHORIZED,
-        "Your API token was not recognized by the Gatling Enterprise server: please configure a valid token");
+    EnterpriseClientException e =
+        UploadPackage_Status_EnterpriseClientException(HttpURLConnection.HTTP_UNAUTHORIZED);
+    assertTrue(e instanceof UnauthorizedApiCallException);
   }
 
   @Test
   void UploadPackage_StatusUnknown_EnterpriseClientException() {
-    UploadPackage_Status_EnterpriseClientException(
-        666, "Unhandled API response (status code: 666, body: )");
+    EnterpriseClientException e = UploadPackage_Status_EnterpriseClientException(666);
+    assertTrue(e instanceof UnhandledApiCallException);
+    assertTrue(e.getMessage().contains("666"));
   }
 }

@@ -16,9 +16,9 @@
 
 package io.gatling.plugin.util.model;
 
-import java.util.Objects;
-
 import static io.gatling.plugin.util.ObjectsUtil.nonNullParam;
+
+import java.util.Objects;
 
 public final class SystemProperty {
   public final String key;

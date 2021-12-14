@@ -16,10 +16,10 @@
 
 package io.gatling.plugin.util.model;
 
+import static io.gatling.plugin.util.ObjectsUtil.nonNullParam;
+
 import java.util.Objects;
 import java.util.UUID;
-
-import static io.gatling.plugin.util.ObjectsUtil.nonNullParam;
 
 public final class PackageCreationPayload {
   public final String name;

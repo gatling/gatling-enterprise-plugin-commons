@@ -16,6 +16,8 @@
 
 package io.gatling.plugin.util.model;
 
+import static io.gatling.plugin.util.ObjectsUtil.nonNullParam;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
@@ -25,8 +27,6 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
-
-import static io.gatling.plugin.util.ObjectsUtil.nonNullParam;
 
 public final class SimulationCreationPayload {
 

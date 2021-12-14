@@ -20,6 +20,7 @@ import static io.gatling.plugin.util.JsonUtil.JSON_MAPPER;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import io.gatling.plugin.util.exceptions.*;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import okhttp3.HttpUrl;
@@ -61,7 +62,7 @@ abstract class AbstractApiRequests {
       defaultValidateResponse(response);
       return handleSuccessfulResponse.apply(response);
     } catch (IOException e) {
-      throw new EnterpriseClientException("A call to the Gatling Enterprise API failed", e);
+      throw new ApiCallIOException(e);
     }
   }
 
@@ -77,16 +78,13 @@ abstract class AbstractApiRequests {
     if (!response.isSuccessful()) {
       switch (response.code()) {
         case HttpURLConnection.HTTP_UNAUTHORIZED:
-          throw new EnterpriseClientException(
-              "Your API token was not recognized by the Gatling Enterprise server: please configure a valid token");
+          throw new UnauthorizedApiCallException();
         case HttpURLConnection.HTTP_FORBIDDEN:
-          throw new EnterpriseClientException(
-              "Your API token does not have enough privileges: please configure a token with the role 'All'");
+          throw new ForbiddenApiCallException();
+        case HttpURLConnection.HTTP_BAD_REQUEST:
+          throw new InvalidApiCallException(readResponseBody(response));
         default:
-          throw new EnterpriseClientException(
-              String.format(
-                  "Unhandled API response (status code: %s, body: %s)",
-                  response.code(), readResponseBody(response)));
+          throw new UnhandledApiCallException(response.code(), readResponseBody(response));
       }
     }
   }
@@ -95,8 +93,7 @@ abstract class AbstractApiRequests {
     try (ResponseBody body = response.body()) {
       return body.string();
     } catch (IOException e) {
-      throw new EnterpriseClientException(
-          "The Gatling Enterprise API returned an unreadable response");
+      throw new JsonResponseProcessingException(e);
     }
   }
 
@@ -104,7 +101,7 @@ abstract class AbstractApiRequests {
     try {
       return JSON_MAPPER.readValue(readResponseBody(response), valueType);
     } catch (JsonProcessingException e) {
-      throw new EnterpriseClientException("Unable to parse API response", e);
+      throw new JsonResponseProcessingException(e);
     }
   }
 
@@ -113,16 +110,16 @@ abstract class AbstractApiRequests {
     try {
       return JSON_MAPPER.readValue(readResponseBody(response), valueTypeRef);
     } catch (JsonProcessingException e) {
-      throw new EnterpriseClientException("Unable to parse API response", e);
+      throw new JsonResponseProcessingException(e);
     }
   }
 
-  RequestBody jsonRequestBody(Object obj) throws EnterpriseClientException {
+  RequestBody jsonRequestBody(Object obj) {
     final String json;
     try {
       json = JSON_MAPPER.writeValueAsString(obj);
     } catch (JsonProcessingException e) {
-      throw new EnterpriseClientException("Unable to serialize object as JSON: " + obj);
+      throw new JsonRequestProcessingException(e);
     }
     return RequestBody.create(JSON_MEDIA_TYPE, json);
   }

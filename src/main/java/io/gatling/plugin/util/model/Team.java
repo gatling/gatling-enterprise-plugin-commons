@@ -16,12 +16,12 @@
 
 package io.gatling.plugin.util.model;
 
+import static io.gatling.plugin.util.ObjectsUtil.nonNullParam;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 import java.util.UUID;
-
-import static io.gatling.plugin.util.ObjectsUtil.nonNullParam;
 
 public final class Team {
   public final UUID id;

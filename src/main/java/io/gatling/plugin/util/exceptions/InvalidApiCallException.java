@@ -14,15 +14,10 @@
  * limitations under the License.
  */
 
-package io.gatling.plugin.util;
+package io.gatling.plugin.util.exceptions;
 
-public final class UnsupportedClientException extends Exception {
-  UnsupportedClientException(String client, String version) {
-    super(
-        "Client "
-            + client
-            + " version "
-            + version
-            + " is no longer supported; please upgrade to the latest version");
+public final class InvalidApiCallException extends EnterpriseClientException {
+  public InvalidApiCallException(String details) {
+    super("Invalid request to the Gatling Enterprise API: " + details);
   }
 }
