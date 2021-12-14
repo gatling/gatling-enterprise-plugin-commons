@@ -17,9 +17,8 @@
 package io.gatling.plugin.util;
 
 import io.gatling.plugin.util.model.RunSummary;
-import io.gatling.plugin.util.model.SystemProperty;
 import java.io.File;
-import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public interface EnterpriseClient {
@@ -29,6 +28,6 @@ public interface EnterpriseClient {
 
   long uploadPackage(UUID packageId, File file) throws EnterpriseClientException;
 
-  RunSummary startSimulation(UUID simulationId, List<SystemProperty> systemProperties, File file)
+  RunSummary startSimulation(UUID simulationId, Map<String, String> systemProperties, File file)
       throws EnterpriseClientException;
 }

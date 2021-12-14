@@ -22,7 +22,9 @@ import io.gatling.plugin.util.model.SystemProperty;
 import java.io.File;
 import java.net.URL;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import okhttp3.*;
 
 public final class OkHttpEnterpriseClient implements EnterpriseClient {
@@ -59,11 +61,17 @@ public final class OkHttpEnterpriseClient implements EnterpriseClient {
 
   @Override
   public RunSummary startSimulation(
-      UUID simulationId, List<SystemProperty> systemProperties, File file)
+      UUID simulationId, Map<String, String> systemProperties, File file)
       throws EnterpriseClientException {
+
+    final List<SystemProperty> sysPropsList =
+        systemProperties.entrySet().stream()
+            .map(entry -> new SystemProperty(entry.getKey(), entry.getValue()))
+            .collect(Collectors.toList());
+
     final Simulation simulation = simulationsApiRequests.getSimulation(simulationId);
     doUploadPackage(simulation.pkgId, file);
-    return simulationsApiRequests.startSimulation(simulationId, systemProperties);
+    return simulationsApiRequests.startSimulation(simulationId, sysPropsList);
   }
 
   private long doUploadPackage(UUID packageId, File file) throws EnterpriseClientException {
