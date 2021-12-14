@@ -17,6 +17,8 @@
 package io.gatling.plugin.util;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import io.gatling.plugin.util.exceptions.EnterpriseClientException;
+import io.gatling.plugin.util.exceptions.SimulationNotFoundException;
 import io.gatling.plugin.util.model.RunSummary;
 import io.gatling.plugin.util.model.Simulation;
 import io.gatling.plugin.util.model.SimulationCreationPayload;
@@ -47,8 +49,7 @@ class SimulationsApiRequests extends AbstractApiRequests {
         response -> readResponseJson(response, Simulation.class),
         response -> {
           if (response.code() == HttpURLConnection.HTTP_NOT_FOUND) {
-            throw new EnterpriseClientException(
-                String.format("Simulation with id %s does not exist", simulationId));
+            throw new SimulationNotFoundException(simulationId);
           }
         });
   }

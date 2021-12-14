@@ -16,12 +16,12 @@
 
 package io.gatling.plugin.util.model;
 
+import static io.gatling.plugin.util.ObjectsUtil.nonNullParam;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import java.util.Objects;
-
-import static io.gatling.plugin.util.ObjectsUtil.nonNullParam;
 
 public final class Teams {
   public final List<Team> data;

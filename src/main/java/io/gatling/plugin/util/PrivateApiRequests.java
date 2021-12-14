@@ -16,6 +16,8 @@
 
 package io.gatling.plugin.util;
 
+import io.gatling.plugin.util.exceptions.EnterpriseClientException;
+import io.gatling.plugin.util.exceptions.UnsupportedClientException;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
