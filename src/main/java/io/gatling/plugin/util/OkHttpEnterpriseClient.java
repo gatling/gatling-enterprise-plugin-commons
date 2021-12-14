@@ -62,7 +62,7 @@ public final class OkHttpEnterpriseClient implements EnterpriseClient {
       UUID simulationId, List<SystemProperty> systemProperties, File file)
       throws EnterpriseClientException {
     final Simulation simulation = simulationsApiRequests.getSimulation(simulationId);
-    doUploadPackage(simulation.artifactId, file);
+    doUploadPackage(simulation.pkgId, file);
     return simulationsApiRequests.startSimulation(simulationId, systemProperties);
   }
 

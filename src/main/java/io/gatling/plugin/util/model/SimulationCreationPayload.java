@@ -33,17 +33,17 @@ public final class SimulationCreationPayload {
 
   @JsonProperty(value = "build")
   @JsonSerialize(using = ArtifactIdJsonSerializer.class)
-  public final UUID artifactId;
+  public final UUID pkgId;
 
-  public SimulationCreationPayload(String name, UUID teamId, String className, UUID artifactId) {
+  public SimulationCreationPayload(String name, UUID teamId, String className, UUID pkgId) {
     Objects.requireNonNull(name, "Property 'name' is required");
     Objects.requireNonNull(teamId, "Property 'teamId' is required");
     Objects.requireNonNull(className, "Property 'className' is required");
-    Objects.requireNonNull(artifactId, "Property 'artifactId' is required");
+    Objects.requireNonNull(pkgId, "Property 'pkgId' is required");
     this.name = name;
     this.teamId = teamId;
     this.className = className;
-    this.artifactId = artifactId;
+    this.pkgId = pkgId;
   }
 
   @Override
@@ -54,19 +54,19 @@ public final class SimulationCreationPayload {
     return name.equals(that.name)
         && teamId.equals(that.teamId)
         && className.equals(that.className)
-        && artifactId.equals(that.artifactId);
+        && pkgId.equals(that.pkgId);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(name, teamId, className, artifactId);
+    return Objects.hash(name, teamId, className, pkgId);
   }
 
   @Override
   public String toString() {
     return String.format(
-        "Simulation{name='%s',teamId='%s',className='%s',artifactId='%s'}",
-        name, teamId, className, artifactId);
+        "Simulation{name='%s',teamId='%s',className='%s',pkgId='%s'}",
+        name, teamId, className, pkgId);
   }
 
   private static final class ArtifactIdJsonSerializer extends JsonSerializer<UUID> {
@@ -74,7 +74,7 @@ public final class SimulationCreationPayload {
     public void serialize(UUID value, JsonGenerator gen, SerializerProvider serializers)
         throws IOException {
       gen.writeStartObject();
-      gen.writeStringField("artifactId", value.toString());
+      gen.writeStringField("pkgId", value.toString());
       gen.writeEndObject();
     }
   }

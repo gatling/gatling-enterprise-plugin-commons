@@ -53,7 +53,7 @@ public class JsonMarshallingTest {
             UUID.fromString("0cf26226-b261-4af6-a52a-1fec36f4394a"));
     final String actual = JSON_MAPPER.writeValueAsString(simulation);
     final String expected =
-        "{\"name\":\"My Gatling Simulation\",\"teamId\":\"2bc38879-6dd1-461d-a8fd-47df4991fd9b\",\"className\":\"my.package.MyGatlingSimulation\",\"build\":{\"artifactId\":\"0cf26226-b261-4af6-a52a-1fec36f4394a\"}}";
+        "{\"name\":\"My Gatling Simulation\",\"teamId\":\"2bc38879-6dd1-461d-a8fd-47df4991fd9b\",\"className\":\"my.package.MyGatlingSimulation\",\"build\":{\"pkgId\":\"0cf26226-b261-4af6-a52a-1fec36f4394a\"}}";
     assertEquals(expected, actual);
   }
 

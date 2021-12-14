@@ -28,19 +28,19 @@ public final class Simulation {
   public final String name;
   public final UUID teamId;
   public final String className;
-  public final UUID artifactId;
+  public final UUID pkgId;
 
-  public Simulation(UUID id, String name, UUID teamId, String className, UUID artifactId) {
+  public Simulation(UUID id, String name, UUID teamId, String className, UUID pkgId) {
     Objects.requireNonNull(id, "Property 'id' is required");
     Objects.requireNonNull(name, "Property 'name' is required");
     Objects.requireNonNull(teamId, "Property 'teamId' is required");
     Objects.requireNonNull(className, "Property 'className' is required");
-    Objects.requireNonNull(artifactId, "Property 'artifactId' is required");
+    Objects.requireNonNull(pkgId, "Property 'pkgId' is required");
     this.id = id;
     this.name = name;
     this.teamId = teamId;
     this.className = className;
-    this.artifactId = artifactId;
+    this.pkgId = pkgId;
   }
 
   @JsonCreator
@@ -50,7 +50,7 @@ public final class Simulation {
       @JsonProperty(value = "teamId", required = true) UUID teamId,
       @JsonProperty(value = "className", required = true) String className,
       @JsonProperty(value = "build", required = true) Map<String, Object> build) {
-    this(id, name, teamId, className, UUID.fromString((String) build.get("artifactId")));
+    this(id, name, teamId, className, UUID.fromString((String) build.get("pkgId")));
   }
 
   @Override
@@ -62,18 +62,18 @@ public final class Simulation {
         && name.equals(that.name)
         && teamId.equals(that.teamId)
         && className.equals(that.className)
-        && artifactId.equals(that.artifactId);
+        && pkgId.equals(that.pkgId);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, name, teamId, className, artifactId);
+    return Objects.hash(id, name, teamId, className, pkgId);
   }
 
   @Override
   public String toString() {
     return String.format(
-        "Simulation{id='%s',name='%s',teamId='%s',className='%s',artifactId='%s'}",
-        id, name, teamId, className, artifactId);
+        "Simulation{id='%s',name='%s',teamId='%s',className='%s',pkgId='%s'}",
+        id, name, teamId, className, pkgId);
   }
 }
