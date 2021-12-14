@@ -16,24 +16,37 @@
 
 package io.gatling.plugin.util;
 
+import io.gatling.plugin.util.exceptions.*;
 import io.gatling.plugin.util.model.RunSummary;
 import io.gatling.plugin.util.model.Simulation;
 import java.io.File;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * The following exception sub-classes of {@link EnterpriseClientException} can be thrown by all
+ * methods of this public API:
+ *
+ * <ul>
+ *   <li>{@link UnauthorizedApiCallException}: invalid authentication token
+ *   <li>{@link ForbiddenApiCallException}: authentication token with insufficient privileges
+ *   <li>{@link ApiCallIOException}: unexpected IO error
+ *   <li>{@link InvalidApiCallException}: invalid input data
+ * </ul>
+ */
 public interface EnterpriseClient {
 
   /**
    * @param client Required
    * @param version Required
+   * @throws UnsupportedClientException if this client version is outdated
    */
-  void checkVersionSupport(String client, String version)
-      throws UnsupportedClientException, EnterpriseClientException;
+  void checkVersionSupport(String client, String version) throws EnterpriseClientException;
 
   /**
    * @param packageId Required
    * @param file Path to the packaged JAR file to upload; required
+   * @throws PackageNotFoundException if the packageId does not exist
    */
   long uploadPackage(UUID packageId, File file) throws EnterpriseClientException;
 
@@ -41,6 +54,7 @@ public interface EnterpriseClient {
    * @param simulationId Required
    * @param systemProperties Required (can be an empty map)
    * @param file Path to the packaged JAR file to upload and run; required
+   * @throws SimulationNotFoundException if the simulationId does not exist
    */
   RunSummary startSimulation(UUID simulationId, Map<String, String> systemProperties, File file)
       throws EnterpriseClientException;

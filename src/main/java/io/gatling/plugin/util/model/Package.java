@@ -16,17 +16,18 @@
 
 package io.gatling.plugin.util.model;
 
+import static io.gatling.plugin.util.ObjectsUtil.nonNullParam;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 import java.util.UUID;
 
-import static io.gatling.plugin.util.ObjectsUtil.nonNullParam;
-
 public final class Package {
   public final UUID id;
   /** Optional. */
   public final UUID teamId;
+
   public final String name;
   /** Optional. */
   public final String fileName;

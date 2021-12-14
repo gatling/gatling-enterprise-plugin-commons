@@ -14,15 +14,12 @@
  * limitations under the License.
  */
 
-package io.gatling.plugin.util;
+package io.gatling.plugin.util.exceptions;
 
-public final class EnterpriseClientException extends Exception {
+import java.util.UUID;
 
-  EnterpriseClientException(String message) {
-    super(message);
-  }
-
-  EnterpriseClientException(String message, Exception e) {
-    super(message, e);
+public final class SimulationNotFoundException extends EnterpriseClientException {
+  public SimulationNotFoundException(UUID simulationId) {
+    super("Simulation with id " + simulationId + " not found");
   }
 }
