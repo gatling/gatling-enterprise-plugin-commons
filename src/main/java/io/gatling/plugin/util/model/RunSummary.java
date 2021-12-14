@@ -24,19 +24,19 @@ import java.util.UUID;
 public final class RunSummary {
   public final UUID runId;
   public final String className;
-  public final String reportsUrl;
+  public final String reportsPath;
 
   @JsonCreator
   public RunSummary(
       @JsonProperty(value = "runId", required = true) UUID runId,
       @JsonProperty(value = "className", required = true) String className,
-      @JsonProperty(value = "reportsUrl", required = true) String reportsUrl) {
+      @JsonProperty(value = "reportsPath", required = true) String reportsPath) {
     Objects.requireNonNull(runId, "Property 'runId' is required");
     Objects.requireNonNull(className, "Property 'className' is required");
-    Objects.requireNonNull(reportsUrl, "Property 'reportsUrl' is required");
+    Objects.requireNonNull(reportsPath, "Property 'reportsPath' is required");
     this.runId = runId;
     this.className = className;
-    this.reportsUrl = reportsUrl;
+    this.reportsPath = reportsPath;
   }
 
   @Override
@@ -46,17 +46,17 @@ public final class RunSummary {
     RunSummary that = (RunSummary) o;
     return runId.equals(that.runId)
         && className.equals(that.className)
-        && reportsUrl.equals(that.reportsUrl);
+        && reportsPath.equals(that.reportsPath);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(runId, className, reportsUrl);
+    return Objects.hash(runId, className, reportsPath);
   }
 
   @Override
   public String toString() {
     return String.format(
-        "RunSummary{runId='%s',className='%s',reportsUrl='%s'}", runId, className, reportsUrl);
+        "RunSummary{runId='%s',className='%s',reportsPath='%s'}", runId, className, reportsPath);
   }
 }
