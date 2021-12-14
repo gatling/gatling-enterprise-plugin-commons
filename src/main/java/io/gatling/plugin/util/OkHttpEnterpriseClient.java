@@ -82,7 +82,7 @@ public final class OkHttpEnterpriseClient implements EnterpriseClient {
   }
 
   @Override
-  public RunSummary startSimulation(
+  public SimulationAndRunSummary startSimulation(
       UUID simulationId, Map<String, String> systemProperties, File file)
       throws EnterpriseClientException {
     nonNullParam(simulationId, "simulationId");
@@ -96,7 +96,9 @@ public final class OkHttpEnterpriseClient implements EnterpriseClient {
 
     final Simulation simulation = simulationsApiRequests.getSimulation(simulationId);
     doUploadPackage(simulation.pkgId, file);
-    return simulationsApiRequests.startSimulation(simulationId, sysPropsList);
+    final RunSummary runSummary =
+        simulationsApiRequests.startSimulation(simulationId, sysPropsList);
+    return new SimulationAndRunSummary(simulation, runSummary);
   }
 
   @Override
