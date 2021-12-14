@@ -119,13 +119,13 @@ public class JsonUnmarshallingTest {
   @Test
   public void RunSummary_unmarshall() throws JsonProcessingException {
     final String json =
-        "{\"className\": \"my.package.MyGatlingSimulation\",\"runId\": \"34c8716e-00bd-48dc-a28d-0568e9aa9622\",\"reportsUrl\":\"https://cloud.gatling.io/#/simulations/reports/34c8716e-00bd-48dc-a28d-0568e9aa9622/1636401292643/1636401306643/requests/*/*/*\"}\n";
+        "{\"className\": \"my.package.MyGatlingSimulation\",\"runId\": \"34c8716e-00bd-48dc-a28d-0568e9aa9622\",\"reportsPath\":\"/#/simulations/reports/34c8716e-00bd-48dc-a28d-0568e9aa9622\"}\n";
     final RunSummary actual = JSON_MAPPER.readValue(json, RunSummary.class);
     final RunSummary expected =
         new RunSummary(
             UUID.fromString("34c8716e-00bd-48dc-a28d-0568e9aa9622"),
             "my.package.MyGatlingSimulation",
-            "https://cloud.gatling.io/#/simulations/reports/34c8716e-00bd-48dc-a28d-0568e9aa9622/1636401292643/1636401306643/requests/*/*/*");
+            "/#/simulations/reports/34c8716e-00bd-48dc-a28d-0568e9aa9622");
     assertEquals(expected, actual);
   }
 }
