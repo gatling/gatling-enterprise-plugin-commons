@@ -89,20 +89,19 @@ public final class OkHttpEnterpriseClient implements EnterpriseClient {
     nonNullParam(systemProperties, "systemProperties");
     nonNullParam(file, "file");
 
-    final List<SystemProperty> sysPropsList =
-        systemProperties.entrySet().stream()
-            .map(entry -> new SystemProperty(entry.getKey(), entry.getValue()))
-            .collect(Collectors.toList());
-
     final Simulation simulation = simulationsApiRequests.getSimulation(simulationId);
     doUploadPackage(simulation.pkgId, file);
-    final RunSummary runSummary =
-        simulationsApiRequests.startSimulation(simulationId, sysPropsList);
-    return new SimulationAndRunSummary(simulation, runSummary);
+    return new SimulationAndRunSummary(
+        simulation, doStartSimulation(simulationId, systemProperties));
   }
 
   @Override
-  public Simulation createSimulation(String groupId, String artifactId, String className)
+  public SimulationAndRunSummary createAndStartSimulation(
+      String groupId,
+      String artifactId,
+      String className,
+      Map<String, String> systemProperties,
+      File file)
       throws EnterpriseClientException {
     nonEmptyParam(artifactId, "artifactId");
     nonEmptyParam(className, "className");
@@ -132,26 +131,43 @@ public final class OkHttpEnterpriseClient implements EnterpriseClient {
 
     final Package pkg =
         packagesApiRequests.createPackage(new PackageCreationPayload(packageName, team.id));
+    doUploadPackage(pkg.id, file);
 
     final Map<UUID, HostByPool> hostsByPool = new HashMap<>();
     hostsByPool.put(pool.id, new HostByPool(1, 0));
-    return simulationsApiRequests.createSimulation(
-        new SimulationCreationPayload(
-            simulationName,
-            team.id,
-            className,
-            pkg.id,
-            /* jvmOptions */ null,
-            DEFAULT_SYSTEM_PROPERTIES,
-            /* ignoreGlobalProperties */ false,
-            DEFAULT_TIME_WINDOW,
-            hostsByPool,
-            /* usePoolWeights */ false,
-            /* usePoolDedicatedIps */ false));
+
+    final Simulation simulation =
+        simulationsApiRequests.createSimulation(
+            new SimulationCreationPayload(
+                simulationName,
+                team.id,
+                className,
+                pkg.id,
+                /* jvmOptions */ null,
+                DEFAULT_SYSTEM_PROPERTIES,
+                /* ignoreGlobalProperties */ false,
+                DEFAULT_TIME_WINDOW,
+                hostsByPool,
+                /* usePoolWeights */ false,
+                /* usePoolDedicatedIps */ false));
+
+    return new SimulationAndRunSummary(
+        simulation, doStartSimulation(simulation.id, systemProperties));
   }
 
   private long doUploadPackage(UUID packageId, File file) throws EnterpriseClientException {
     // TODO MISC-293 Add checksum verification to avoid unnecessary uploads
     return packagesApiRequests.uploadPackage(packageId, file);
+  }
+
+  private RunSummary doStartSimulation(UUID simulationId, Map<String, String> systemProperties)
+      throws EnterpriseClientException {
+
+    final List<SystemProperty> sysPropsList =
+        systemProperties.entrySet().stream()
+            .map(entry -> new SystemProperty(entry.getKey(), entry.getValue()))
+            .collect(Collectors.toList());
+
+    return simulationsApiRequests.startSimulation(simulationId, sysPropsList);
   }
 }

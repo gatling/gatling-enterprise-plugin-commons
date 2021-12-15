@@ -17,7 +17,6 @@
 package io.gatling.plugin.util;
 
 import io.gatling.plugin.util.exceptions.*;
-import io.gatling.plugin.util.model.Simulation;
 import io.gatling.plugin.util.model.SimulationAndRunSummary;
 import java.io.File;
 import java.util.Map;
@@ -65,6 +64,11 @@ public interface EnterpriseClient {
    * @param artifactId Required
    * @param className Required
    */
-  Simulation createSimulation(String groupId, String artifactId, String className)
+  SimulationAndRunSummary createAndStartSimulation(
+      String groupId,
+      String artifactId,
+      String className,
+      Map<String, String> systemProperties,
+      File file)
       throws EnterpriseClientException;
 }
