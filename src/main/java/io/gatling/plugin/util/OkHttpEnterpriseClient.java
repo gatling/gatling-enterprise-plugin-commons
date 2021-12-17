@@ -20,6 +20,8 @@ import static io.gatling.plugin.util.ObjectsUtil.nonEmptyParam;
 import static io.gatling.plugin.util.ObjectsUtil.nonNullParam;
 
 import io.gatling.plugin.util.exceptions.EnterpriseClientException;
+import io.gatling.plugin.util.exceptions.TeamConfigurationRequiredException;
+import io.gatling.plugin.util.exceptions.TeamNotFoundException;
 import io.gatling.plugin.util.exceptions.UnsupportedClientException;
 import io.gatling.plugin.util.model.*;
 import io.gatling.plugin.util.model.Package;
@@ -97,6 +99,7 @@ public final class OkHttpEnterpriseClient implements EnterpriseClient {
 
   @Override
   public SimulationAndRunSummary createAndStartSimulation(
+      UUID teamId,
       String groupId,
       String artifactId,
       String className,
@@ -110,19 +113,27 @@ public final class OkHttpEnterpriseClient implements EnterpriseClient {
     final String[] classNameParts = className.split("\\.");
     final String simulationName = classNameParts[classNameParts.length - 1];
 
-    final Teams teams = teamsApiRequests.listTeams();
+    final List<Team> teams = teamsApiRequests.listTeams().data;
     final Team team;
-    if (teams.data.size() == 1) {
-      team = teams.data.get(0);
-    } else {
+    if (teams.isEmpty()) {
       throw new UnsupportedOperationException(
-          "Cannot automatically create a simulation if several teams are available (configuration prompts will be added in a later plugin version)");
+          "Cannot create a simulation: no team was found and a simulation must belong to a team.");
+    } else if (teamId != null) {
+      team =
+          teams.stream()
+              .filter(t -> teamId.equals(t.id))
+              .findFirst()
+              .orElseThrow(() -> new TeamNotFoundException(teamId));
+    } else if (teams.size() == 1) {
+      team = teams.get(0);
+    } else {
+      throw new TeamConfigurationRequiredException(teams, "Cannot create a simulation");
     }
 
-    final Pools pools = poolsApiRequests.listPools();
+    final List<Pool> pools = poolsApiRequests.listPools().data;
     final Pool pool;
-    if (pools.data.size() > 0) {
-      pool = pools.data.get(0);
+    if (pools.size() > 0) {
+      pool = pools.get(0);
     } else {
       // Should never happen on Gatling Enterprise Cloud
       throw new IllegalStateException(

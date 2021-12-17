@@ -60,11 +60,15 @@ public interface EnterpriseClient {
       throws EnterpriseClientException;
 
   /**
+   * @param teamId Optional
    * @param groupId Optional
    * @param artifactId Required
    * @param className Required
+   * @throws TeamConfigurationRequiredException if unable to choose a team (teamId should be
+   *     specified)
    */
   SimulationAndRunSummary createAndStartSimulation(
+      UUID teamId,
       String groupId,
       String artifactId,
       String className,
