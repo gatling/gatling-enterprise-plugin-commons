@@ -20,33 +20,51 @@ import static io.gatling.plugin.util.ObjectsUtil.nonNullParam;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
-public final class Packages {
-  public final List<PackageIndex> data;
+public final class PackageIndex {
+  public final UUID id;
+  /** Optional. */
+  public final UUID teamId;
+
+  public final String name;
+  /** Optional. */
+  public final String fileName;
 
   @JsonCreator
-  public Packages(@JsonProperty(value = "data", required = true) List<PackageIndex> data) {
-    nonNullParam(data, "data");
-    this.data = data;
+  public PackageIndex(
+      @JsonProperty(value = "id", required = true) UUID id,
+      @JsonProperty(value = "teamId") UUID teamId,
+      @JsonProperty(value = "name", required = true) String name,
+      @JsonProperty(value = "fileName") String fileName) {
+    nonNullParam(id, "id");
+    nonNullParam(name, "name");
+    this.id = id;
+    this.teamId = teamId;
+    this.name = name;
+    this.fileName = fileName;
   }
 
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-    Packages packages = (Packages) o;
-    return data.equals(packages.data);
+    PackageIndex aPackage = (PackageIndex) o;
+    return id.equals(aPackage.id)
+        && Objects.equals(teamId, aPackage.teamId)
+        && name.equals(aPackage.name)
+        && Objects.equals(fileName, aPackage.fileName);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(data);
+    return Objects.hash(id, teamId, name, fileName);
   }
 
   @Override
   public String toString() {
-    return String.format("Packages{data=%s}", data);
+    return String.format(
+        "Package{id='%s',teamId='%s',name='%s',fileName='%s'}", id, teamId, name, fileName);
   }
 }
