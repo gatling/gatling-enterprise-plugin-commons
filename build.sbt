@@ -1,5 +1,7 @@
 import net.moznion.sbt.spotless.config.{ GoogleJavaFormatConfig, JavaConfig, SpotlessConfig }
 
+ThisBuild / sonatypeCredentialHost := "s01.oss.sonatype.org"
+
 inScope(Global) {
   Seq(
     githubPath := "gatling/gatling-enterprise-plugin-commons",
