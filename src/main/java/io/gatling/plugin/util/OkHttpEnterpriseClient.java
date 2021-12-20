@@ -19,14 +19,18 @@ package io.gatling.plugin.util;
 import static io.gatling.plugin.util.ObjectsUtil.nonEmptyParam;
 import static io.gatling.plugin.util.ObjectsUtil.nonNullParam;
 
+import io.gatling.plugin.util.exceptions.ApiCallIOException;
 import io.gatling.plugin.util.exceptions.EnterpriseClientException;
+import io.gatling.plugin.util.exceptions.PackageNotFoundException;
 import io.gatling.plugin.util.exceptions.TeamConfigurationRequiredException;
 import io.gatling.plugin.util.exceptions.TeamNotFoundException;
 import io.gatling.plugin.util.exceptions.UnsupportedClientException;
 import io.gatling.plugin.util.model.*;
 import io.gatling.plugin.util.model.Package;
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
+import java.security.NoSuchAlgorithmException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -80,7 +84,7 @@ public final class OkHttpEnterpriseClient implements EnterpriseClient {
   public long uploadPackage(UUID packageId, File file) throws EnterpriseClientException {
     nonNullParam(packageId, "packageId");
     nonNullParam(file, "file");
-    return doUploadPackage(packageId, file);
+    return doUploadPackageWithChecksum(packageId, file);
   }
 
   @Override
@@ -92,7 +96,7 @@ public final class OkHttpEnterpriseClient implements EnterpriseClient {
     nonNullParam(file, "file");
 
     final Simulation simulation = simulationsApiRequests.getSimulation(simulationId);
-    doUploadPackage(simulation.pkgId, file);
+    doUploadPackageWithChecksum(simulation.pkgId, file);
     return new SimulationAndRunSummary(
         simulation, doStartSimulation(simulationId, systemProperties));
   }
@@ -167,8 +171,29 @@ public final class OkHttpEnterpriseClient implements EnterpriseClient {
   }
 
   private long doUploadPackage(UUID packageId, File file) throws EnterpriseClientException {
-    // TODO MISC-293 Add checksum verification to avoid unnecessary uploads
     return packagesApiRequests.uploadPackage(packageId, file);
+  }
+
+  private boolean checksumComparison(UUID packageId, File file) throws EnterpriseClientException {
+    try {
+      Package pkg = packagesApiRequests.readPackage(packageId);
+      return pkg.file != null && PkgChecksum.computeChecksum(file).equals(pkg.file.checksum);
+    } catch (PackageNotFoundException e) {
+      return false;
+    } catch (NoSuchAlgorithmException e) {
+      throw new IllegalStateException("Checksum algorithm was not available", e);
+    } catch (IOException e) {
+      throw new ApiCallIOException(e);
+    }
+  }
+
+  private long doUploadPackageWithChecksum(UUID packageId, File file)
+      throws EnterpriseClientException {
+    if (checksumComparison(packageId, file)) {
+      return file.length();
+    } else {
+      return doUploadPackage(packageId, file);
+    }
   }
 
   private RunSummary doStartSimulation(UUID simulationId, Map<String, String> systemProperties)
