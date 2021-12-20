@@ -42,6 +42,20 @@ class PackagesApiRequests extends AbstractApiRequests {
     return executeRequest(request, response -> readResponseJson(response, Packages.class));
   }
 
+  Package readPackage(UUID packageId) throws EnterpriseClientException {
+    HttpUrl requestUrl =
+        url.newBuilder().addPathSegment("artifacts").addPathSegment(packageId.toString()).build();
+    Request.Builder request = new Request.Builder().url(requestUrl).get();
+    return executeRequest(
+        request,
+        response -> readResponseJson(response, Package.class),
+        response -> {
+          if (response.code() == HttpURLConnection.HTTP_NOT_FOUND) {
+            throw new PackageNotFoundException(packageId);
+          }
+        });
+  }
+
   Package createPackage(PackageCreationPayload pkg) throws EnterpriseClientException {
     HttpUrl requestUrl = url.newBuilder().addPathSegment("artifacts").build();
     RequestBody body = jsonRequestBody(pkg);

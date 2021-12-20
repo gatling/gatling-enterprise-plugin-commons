@@ -30,20 +30,20 @@ public final class Package {
 
   public final String name;
   /** Optional. */
-  public final String fileName;
+  public final PackageFile file;
 
   @JsonCreator
   public Package(
       @JsonProperty(value = "id", required = true) UUID id,
       @JsonProperty(value = "teamId") UUID teamId,
       @JsonProperty(value = "name", required = true) String name,
-      @JsonProperty(value = "fileName") String fileName) {
+      @JsonProperty(value = "file") PackageFile file) {
     nonNullParam(id, "id");
     nonNullParam(name, "name");
     this.id = id;
     this.teamId = teamId;
     this.name = name;
-    this.fileName = fileName;
+    this.file = file;
   }
 
   @Override
@@ -54,17 +54,17 @@ public final class Package {
     return id.equals(aPackage.id)
         && Objects.equals(teamId, aPackage.teamId)
         && name.equals(aPackage.name)
-        && Objects.equals(fileName, aPackage.fileName);
+        && Objects.equals(file, aPackage.file);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, teamId, name, fileName);
+    return Objects.hash(id, teamId, name, file);
   }
 
   @Override
   public String toString() {
     return String.format(
-        "Package{id='%s',teamId='%s',name='%s',fileName='%s'}", id, teamId, name, fileName);
+        "Package{id='%s',teamId='%s',name='%s',file='%s'}", id, teamId, name, file);
   }
 }
