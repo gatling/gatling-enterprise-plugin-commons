@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-package io.gatling.plugin.util;
+package io.gatling.plugin.client.json;
 
-public final class LambdaExceptionUtil {
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-  @FunctionalInterface
-  public interface ConsumerWithExceptions<T, E extends Exception> {
-    void accept(T t) throws E;
-  }
+public final class JsonUtil {
+  private JsonUtil() {}
 
-  @FunctionalInterface
-  public interface FunctionWithExceptions<T, R, E extends Exception> {
-    R apply(T t) throws E;
-  }
+  public static final ObjectMapper JSON_MAPPER =
+      new ObjectMapper()
+          .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+          .setSerializationInclusion(JsonInclude.Include.NON_NULL);
 }

@@ -20,11 +20,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import io.gatling.plugin.util.exceptions.EnterpriseClientException;
-import io.gatling.plugin.util.exceptions.InvalidApiCallException;
-import io.gatling.plugin.util.exceptions.PackageNotFoundException;
-import io.gatling.plugin.util.exceptions.UnauthorizedApiCallException;
-import io.gatling.plugin.util.exceptions.UnhandledApiCallException;
+import io.gatling.plugin.client.exceptions.EnterpriseClientException;
+import io.gatling.plugin.client.exceptions.InvalidApiCallException;
+import io.gatling.plugin.client.exceptions.PackageNotFoundException;
+import io.gatling.plugin.client.exceptions.UnauthorizedApiCallException;
+import io.gatling.plugin.client.exceptions.UnhandledApiCallException;
+import io.gatling.plugin.client.http.OkHttpEnterpriseClient;
 import java.io.File;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;

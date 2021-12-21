@@ -14,17 +14,23 @@
  * limitations under the License.
  */
 
-package io.gatling.plugin.util;
+package io.gatling.plugin.client.exceptions;
 
-public final class LambdaExceptionUtil {
+import io.gatling.plugin.model.Team;
+import java.util.List;
 
-  @FunctionalInterface
-  public interface ConsumerWithExceptions<T, E extends Exception> {
-    void accept(T t) throws E;
+public final class TeamConfigurationRequiredException extends EnterpriseClientException {
+
+  private final List<Team> availableTeams;
+
+  public TeamConfigurationRequiredException(List<Team> availableTeams, String contextMsg) {
+    super(
+        contextMsg
+            + ": several teams were found, you must provide a configuration for a single team.");
+    this.availableTeams = availableTeams;
   }
 
-  @FunctionalInterface
-  public interface FunctionWithExceptions<T, R, E extends Exception> {
-    R apply(T t) throws E;
+  public List<Team> getAvailableTeams() {
+    return availableTeams;
   }
 }

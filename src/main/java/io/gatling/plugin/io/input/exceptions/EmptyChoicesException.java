@@ -14,17 +14,15 @@
  * limitations under the License.
  */
 
-package io.gatling.plugin.util;
+package io.gatling.plugin.io.input.exceptions;
 
-public final class LambdaExceptionUtil {
+public class EmptyChoicesException extends InteractiveException {
 
-  @FunctionalInterface
-  public interface ConsumerWithExceptions<T, E extends Exception> {
-    void accept(T t) throws E;
+  public EmptyChoicesException() {
+    super("Cannot ask user to choose on an empty set of choice");
   }
 
-  @FunctionalInterface
-  public interface FunctionWithExceptions<T, R, E extends Exception> {
-    R apply(T t) throws E;
+  public EmptyChoicesException(String name) {
+    super(String.format("There was no choice available for %s", name));
   }
 }

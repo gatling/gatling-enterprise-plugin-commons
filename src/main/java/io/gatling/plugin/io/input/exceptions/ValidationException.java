@@ -14,17 +14,11 @@
  * limitations under the License.
  */
 
-package io.gatling.plugin.util;
+package io.gatling.plugin.io.input.exceptions;
 
-public final class LambdaExceptionUtil {
+public class ValidationException extends InteractiveException {
 
-  @FunctionalInterface
-  public interface ConsumerWithExceptions<T, E extends Exception> {
-    void accept(T t) throws E;
-  }
-
-  @FunctionalInterface
-  public interface FunctionWithExceptions<T, R, E extends Exception> {
-    R apply(T t) throws E;
+  public ValidationException(String message) {
+    super(message);
   }
 }
