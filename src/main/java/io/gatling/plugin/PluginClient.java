@@ -14,17 +14,15 @@
  * limitations under the License.
  */
 
-package io.gatling.plugin.util;
+package io.gatling.plugin;
 
-public final class LambdaExceptionUtil {
+import io.gatling.plugin.client.EnterpriseClient;
 
-  @FunctionalInterface
-  public interface ConsumerWithExceptions<T, E extends Exception> {
-    void accept(T t) throws E;
-  }
+abstract class PluginClient {
 
-  @FunctionalInterface
-  public interface FunctionWithExceptions<T, R, E extends Exception> {
-    R apply(T t) throws E;
+  protected final EnterpriseClient enterpriseClient;
+
+  public PluginClient(EnterpriseClient enterpriseClient) {
+    this.enterpriseClient = enterpriseClient;
   }
 }

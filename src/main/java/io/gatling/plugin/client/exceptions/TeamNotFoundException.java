@@ -14,17 +14,12 @@
  * limitations under the License.
  */
 
-package io.gatling.plugin.util;
+package io.gatling.plugin.client.exceptions;
 
-public final class LambdaExceptionUtil {
+import java.util.UUID;
 
-  @FunctionalInterface
-  public interface ConsumerWithExceptions<T, E extends Exception> {
-    void accept(T t) throws E;
-  }
-
-  @FunctionalInterface
-  public interface FunctionWithExceptions<T, R, E extends Exception> {
-    R apply(T t) throws E;
+public final class TeamNotFoundException extends EnterpriseClientException {
+  public TeamNotFoundException(UUID teamId) {
+    super("Team with id " + teamId + " not found");
   }
 }
