@@ -14,17 +14,10 @@
  * limitations under the License.
  */
 
-package io.gatling.plugin.util;
+package io.gatling.plugin.client.exceptions;
 
-public final class LambdaExceptionUtil {
-
-  @FunctionalInterface
-  public interface ConsumerWithExceptions<T, E extends Exception> {
-    void accept(T t) throws E;
-  }
-
-  @FunctionalInterface
-  public interface FunctionWithExceptions<T, R, E extends Exception> {
-    R apply(T t) throws E;
+public final class InvalidApiCallException extends EnterpriseClientException {
+  public InvalidApiCallException(String details) {
+    super("Invalid request to the Gatling Enterprise API: " + details);
   }
 }

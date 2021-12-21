@@ -14,17 +14,25 @@
  * limitations under the License.
  */
 
-package io.gatling.plugin.util;
+package io.gatling.plugin.io;
 
-public final class LambdaExceptionUtil {
+import java.util.Scanner;
 
-  @FunctionalInterface
-  public interface ConsumerWithExceptions<T, E extends Exception> {
-    void accept(T t) throws E;
+public class JavaPluginScanner implements PluginScanner {
+
+  private final Scanner scanner;
+
+  public JavaPluginScanner(Scanner scanner) {
+    this.scanner = scanner;
   }
 
-  @FunctionalInterface
-  public interface FunctionWithExceptions<T, R, E extends Exception> {
-    R apply(T t) throws E;
+  @Override
+  public String readString() {
+    return scanner.nextLine();
+  }
+
+  @Override
+  public int readInt() throws NumberFormatException {
+    return Integer.parseInt(readString());
   }
 }

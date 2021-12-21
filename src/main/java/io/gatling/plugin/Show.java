@@ -14,17 +14,21 @@
  * limitations under the License.
  */
 
-package io.gatling.plugin.util;
+package io.gatling.plugin;
 
-public final class LambdaExceptionUtil {
+import io.gatling.plugin.model.*;
 
-  @FunctionalInterface
-  public interface ConsumerWithExceptions<T, E extends Exception> {
-    void accept(T t) throws E;
+public final class Show {
+
+  static String simulation(Simulation simulation) {
+    return String.format("Simulation '%s', id='%s'", simulation.name, simulation.id);
   }
 
-  @FunctionalInterface
-  public interface FunctionWithExceptions<T, R, E extends Exception> {
-    R apply(T t) throws E;
+  static String team(Team team) {
+    return String.format("Team '%s', id='%s'", team.name, team.id);
+  }
+
+  static String pool(Pool pool) {
+    return "Pool " + pool.name;
   }
 }

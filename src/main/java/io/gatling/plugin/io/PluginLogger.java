@@ -14,17 +14,10 @@
  * limitations under the License.
  */
 
-package io.gatling.plugin.util;
+package io.gatling.plugin.io;
 
-public final class LambdaExceptionUtil {
+public interface PluginLogger {
+  void info(String message);
 
-  @FunctionalInterface
-  public interface ConsumerWithExceptions<T, E extends Exception> {
-    void accept(T t) throws E;
-  }
-
-  @FunctionalInterface
-  public interface FunctionWithExceptions<T, R, E extends Exception> {
-    R apply(T t) throws E;
-  }
+  void error(String message);
 }
