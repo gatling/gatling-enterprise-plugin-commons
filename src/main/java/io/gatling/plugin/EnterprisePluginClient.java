@@ -60,6 +60,7 @@ public final class EnterprisePluginClient extends PluginClient implements Enterp
           "Cannot create a simulation: no team was found and a simulation must belong to a team. In order to create a team, see https://gatling.io/docs/enterprise/cloud/reference/admin/teams/");
     } else if (teamId == null && teams.size() != 1) {
       throw new SeveralTeamsFoundException(
+          teams,
           "Cannot configure a team: several teams were found, you must provide a configuration for a single team.");
     }
 

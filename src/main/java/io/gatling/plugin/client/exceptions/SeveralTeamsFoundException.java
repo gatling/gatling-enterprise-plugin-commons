@@ -16,9 +16,19 @@
 
 package io.gatling.plugin.client.exceptions;
 
-public class SeveralTeamsFoundException extends EnterpriseClientException {
+import io.gatling.plugin.model.Team;
+import java.util.List;
 
-  public SeveralTeamsFoundException(String message) {
+public final class SeveralTeamsFoundException extends EnterpriseClientException {
+
+  private final List<Team> availableTeams;
+
+  public SeveralTeamsFoundException(List<Team> availableTeams, String message) {
     super(message);
+    this.availableTeams = availableTeams;
+  }
+
+  public List<Team> getAvailableTeams() {
+    return availableTeams;
   }
 }
