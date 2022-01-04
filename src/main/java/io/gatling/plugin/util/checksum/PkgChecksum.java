@@ -42,6 +42,7 @@ public class PkgChecksum {
         ZipEntry entry;
         while ((entry = zis.getNextEntry()) != null) {
           if (!entry.getName().equals(MANIFEST_NAME)) {
+            // ZipEntry#getCrc is only populated once the entry is closed
             zis.closeEntry();
             md5.update(BigInteger.valueOf(entry.getCrc()).toByteArray());
           }
