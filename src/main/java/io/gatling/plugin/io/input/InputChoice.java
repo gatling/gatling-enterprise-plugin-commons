@@ -51,7 +51,7 @@ public class InputChoice {
         int read = scanner.readInt();
         if (read < inclusiveMin || read >= exclusiveMax) {
           logger.error(
-              String.format("%d is not between %d and %d", read, inclusiveMin, exclusiveMax));
+              String.format("%d is not between %d and %d", read, inclusiveMin, exclusiveMax - 1));
         } else {
           result = read;
         }
