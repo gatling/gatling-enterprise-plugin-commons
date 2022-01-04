@@ -20,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import io.gatling.plugin.client.exceptions.*;
 import io.gatling.plugin.client.http.OkHttpEnterpriseClient;
+import io.gatling.plugin.io.PluginLogger;
 import java.io.File;
 import java.net.HttpURLConnection;
 import java.util.Arrays;
@@ -50,9 +51,17 @@ public class OkHttpEnterpriseClientTest {
 
   private OkHttpEnterpriseClient okHttpEnterpriseClientMockWebServer(MockWebServer server) {
     try {
+      PluginLogger noOpLogger =
+          new PluginLogger() {
+            @Override
+            public void info(String message) {}
+
+            @Override
+            public void error(String message) {}
+          };
       OkHttpEnterpriseClient client =
           OkHttpEnterpriseClient.getInstance(
-              OK_HTTP_CLIENT, server.url("/").url(), TOKEN, "client", "version");
+              noOpLogger, OK_HTTP_CLIENT, server.url("/").url(), TOKEN, "client", "version");
       server.takeRequest(); // Remove checkVersion enqueue request
       return client;
     } catch (EnterpriseClientException | InterruptedException e) {

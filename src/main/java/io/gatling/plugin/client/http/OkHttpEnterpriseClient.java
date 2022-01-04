@@ -16,10 +16,13 @@
 
 package io.gatling.plugin.client.http;
 
+import static io.gatling.plugin.util.ObjectsUtil.nonNullParam;
+
 import io.gatling.plugin.client.EnterpriseClient;
 import io.gatling.plugin.client.exceptions.ApiCallIOException;
 import io.gatling.plugin.client.exceptions.EnterpriseClientException;
 import io.gatling.plugin.client.exceptions.PackageNotFoundException;
+import io.gatling.plugin.io.PluginLogger;
 import io.gatling.plugin.model.*;
 import io.gatling.plugin.util.checksum.PkgChecksum;
 import java.io.File;
@@ -34,6 +37,7 @@ public final class OkHttpEnterpriseClient implements EnterpriseClient {
   private static final Map<String, String> DEFAULT_SYSTEM_PROPERTIES = Collections.emptyMap();
   private static final MeaningfulTimeWindow DEFAULT_TIME_WINDOW = new MeaningfulTimeWindow(0, 0);
 
+  private final PluginLogger logger;
   private final PrivateApiRequests privateApiRequests;
   private final PackagesApiRequests packagesApiRequests;
   private final PoolsApiRequests poolsApiRequests;
@@ -41,25 +45,35 @@ public final class OkHttpEnterpriseClient implements EnterpriseClient {
   private final TeamsApiRequests teamsApiRequests;
 
   public static OkHttpEnterpriseClient getInstance(
-      OkHttpClient okHttpClient, URL url, String token, String client, String version)
+      PluginLogger logger,
+      OkHttpClient okHttpClient,
+      URL url,
+      String token,
+      String client,
+      String version)
       throws EnterpriseClientException {
-    OkHttpEnterpriseClient enterpriseClient = new OkHttpEnterpriseClient(okHttpClient, url, token);
+    OkHttpEnterpriseClient enterpriseClient =
+        new OkHttpEnterpriseClient(logger, okHttpClient, url, token);
     enterpriseClient.privateApiRequests.checkVersionSupport(client, version);
     return enterpriseClient;
   }
 
   public static OkHttpEnterpriseClient getInstance(
-      URL url, String token, String client, String version) throws EnterpriseClientException {
-    return getInstance(new OkHttpClient(), url, token, client, version);
+      PluginLogger logger, URL url, String token, String client, String version)
+      throws EnterpriseClientException {
+    return getInstance(logger, new OkHttpClient(), url, token, client, version);
   }
 
-  private OkHttpEnterpriseClient(OkHttpClient okHttpClient, URL url, String token) {
+  private OkHttpEnterpriseClient(
+      PluginLogger logger, OkHttpClient okHttpClient, URL url, String token) {
+    nonNullParam(logger, "logger");
     final HttpUrl httpUrl = HttpUrl.get(url);
     if (httpUrl == null) {
       throw new IllegalArgumentException(
           String.format("'%s' is not a valid HTTP or HTTPS URL", url));
     }
 
+    this.logger = logger;
     this.privateApiRequests = new PrivateApiRequests(okHttpClient, httpUrl, token);
     this.packagesApiRequests = new PackagesApiRequests(okHttpClient, httpUrl, token);
     this.poolsApiRequests = new PoolsApiRequests(okHttpClient, httpUrl, token);
@@ -129,6 +143,7 @@ public final class OkHttpEnterpriseClient implements EnterpriseClient {
   public long uploadPackageWithChecksum(UUID packageId, File file)
       throws EnterpriseClientException {
     if (checksumComparison(packageId, file)) {
+      logger.info("No code changes detected, skipping package upload");
       return file.length();
     } else {
       return uploadPackage(packageId, file);
