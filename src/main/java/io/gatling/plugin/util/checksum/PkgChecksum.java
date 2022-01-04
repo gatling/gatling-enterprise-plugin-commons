@@ -27,7 +27,7 @@ import java.util.Base64;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-public class PkgChecksum {
+public final class PkgChecksum {
 
   private static final String MANIFEST_NAME = "META-INF/MANIFEST.MF";
 
