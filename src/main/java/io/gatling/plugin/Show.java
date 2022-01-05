@@ -31,4 +31,8 @@ public final class Show {
   static String pool(Pool pool) {
     return "Pool " + pool.name;
   }
+
+  static String pkgIndex(PkgIndex pkg) {
+    return String.format("Package '%s', id='%s'", pkg.name, pkg.id);
+  }
 }

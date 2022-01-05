@@ -46,6 +46,7 @@ public final class InteractiveEnterprisePluginClient extends PluginClient
     this.logger = pluginIO.getLogger();
   }
 
+  /** @return true when create, false when starting */
   private boolean createOrStartSimulation() {
     logger.info("Do you want to create a new simulation or start an existing one?");
     String create = "Create a new Simulation on Gatling Enterprise, then start it";
@@ -142,12 +143,11 @@ public final class InteractiveEnterprisePluginClient extends PluginClient
     logger.info("Proceeding to the create simulation step");
     String className = chooseClassName(configurationClassName, discoveredClassNames);
     String simulationName = chooseSimulationName(className, existingSimulations);
-    String packageName = choosePackageName(configurationGroupId, configurationArtifactId);
     Team team = chooseTeam(configurationTeamId);
+    PkgIndex pkg = choosePackage(team, configurationGroupId, configurationArtifactId);
     Pool pool = choosePool();
     int size = chooseSize();
 
-    Pkg pkg = enterpriseClient.createPackage(packageName, team.id);
     uploadPackage(pkg.id, packageFile);
 
     // TODO: custom pools from configuration, MISC-313
@@ -206,18 +206,49 @@ public final class InteractiveEnterprisePluginClient extends PluginClient
     }
   }
 
+  /** @return true when creating, false when picking */
+  private boolean createOrPickPkg() {
+    logger.info(
+        "Note: packages can be shared by multiple simulations, but differ from simulation class configuration.");
+    logger.info("Do you want to create a new package or use an existing one?");
+
+    String create = "Create a new Package on Gatling Enterprise";
+    String start = "Choose an existing Package on Gatling Enterprise";
+
+    HashSet<String> choices = new HashSet<>();
+    choices.add(create);
+    choices.add(start);
+    return inputChoice.inputFromList(choices, Function.identity()).equals(create);
+  }
+
   /**
+   * Create or choose a package
+   *
    * @param groupId Optional
    * @param artifactId Optional
    */
-  private String choosePackageName(String groupId, String artifactId)
+  private PkgIndex choosePackage(Team team, String groupId, String artifactId)
       throws EnterpriseClientException {
-    List<String> existingPackageNames =
-        enterpriseClient.getPackages().stream().map(pkg -> pkg.name).collect(Collectors.toList());
+    List<PkgIndex> pkgs = enterpriseClient.getPackages();
+    List<PkgIndex> filteredByTeamPkgIndexes =
+        pkgs.stream()
+            .filter(pkg -> pkg.teamId == null || pkg.teamId.equals(team.id))
+            .collect(Collectors.toList());
+    if (filteredByTeamPkgIndexes.isEmpty() || createOrPickPkg()) {
+      List<String> existingPackageNames =
+          pkgs.stream().map(pkg -> pkg.name).collect(Collectors.toList());
+      return createPkg(team, groupId, artifactId, existingPackageNames);
+    } else {
 
+      return inputChoice.inputFromList(new HashSet<>(pkgs), Show::pkgIndex);
+    }
+  }
+
+  private PkgIndex createPkg(
+      Team team, String groupId, String artifactId, List<String> existingPackageNames)
+      throws EnterpriseClientException {
     String defaultPackageName =
         artifactId != null ? (groupId != null ? groupId + ":" + artifactId : artifactId) : null;
-
     ConsumerWithExceptions<String, IllegalArgumentException> packageValidation =
         name -> {
           if (name.isEmpty()) {
@@ -226,16 +257,20 @@ public final class InteractiveEnterprisePluginClient extends PluginClient
             throw new IllegalArgumentException("package name already exist");
           }
         };
-
+    String pkgName;
     if (defaultPackageName != null && !existingPackageNames.contains(defaultPackageName)) {
       Set<String> packageNames = new HashSet<>();
       packageNames.add(defaultPackageName);
-      logger.info("Please, choose your package name");
-      return inputChoice.inputFromStringListWithCustom(packageNames, packageValidation);
+      logger.info("Choose your package name");
+      pkgName = inputChoice.inputFromStringListWithCustom(packageNames, packageValidation);
     } else {
-      logger.info("Please, enter your package name");
-      return inputChoice.inputString(packageValidation);
+      logger.info(
+          String.format(
+              "Enter your package name. (default name '%s' was already used)", defaultPackageName));
+      pkgName = inputChoice.inputString(packageValidation);
     }
+    Pkg pkg = enterpriseClient.createPackage(pkgName, team.id);
+    return new PkgIndex(pkg.id, pkg.teamId, pkg.name, pkg.file != null ? pkg.file.filename : null);
   }
 
   /** @param configurationTeamId Optional */

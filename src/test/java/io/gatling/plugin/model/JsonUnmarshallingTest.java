@@ -36,17 +36,17 @@ public class JsonUnmarshallingTest {
     final Packages expected =
         new Packages(
             Arrays.asList(
-                new PackageIndex(
+                new PkgIndex(
                     UUID.fromString("c0074b5a-5b97-4fbb-bad9-b3848bac3082"),
                     null,
                     "First package",
                     null),
-                new PackageIndex(
+                new PkgIndex(
                     UUID.fromString("44191a0c-2e15-49b3-8876-7aa47cc97587"),
                     UUID.fromString("40084389-c812-42c1-aaef-f8730959510c"),
                     "Second package",
                     null),
-                new PackageIndex(
+                new PkgIndex(
                     UUID.fromString("0cf26226-b261-4af6-a52a-1fec36f4394a"),
                     UUID.fromString("c5f9e46c-3860-4d95-a851-db0814bdd360"),
                     "Third package",

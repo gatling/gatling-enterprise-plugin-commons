@@ -23,7 +23,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 import java.util.UUID;
 
-public final class PackageIndex {
+public final class PkgIndex {
   public final UUID id;
   /** Optional. */
   public final UUID teamId;
@@ -33,7 +33,7 @@ public final class PackageIndex {
   public final String fileName;
 
   @JsonCreator
-  public PackageIndex(
+  public PkgIndex(
       @JsonProperty(value = "id", required = true) UUID id,
       @JsonProperty(value = "teamId") UUID teamId,
       @JsonProperty(value = "name", required = true) String name,
@@ -50,7 +50,7 @@ public final class PackageIndex {
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-    PackageIndex aPackage = (PackageIndex) o;
+    PkgIndex aPackage = (PkgIndex) o;
     return id.equals(aPackage.id)
         && Objects.equals(teamId, aPackage.teamId)
         && name.equals(aPackage.name)

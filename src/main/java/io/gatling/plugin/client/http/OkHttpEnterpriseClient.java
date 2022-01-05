@@ -102,7 +102,7 @@ public final class OkHttpEnterpriseClient implements EnterpriseClient {
   }
 
   @Override
-  public List<PackageIndex> getPackages() throws EnterpriseClientException {
+  public List<PkgIndex> getPackages() throws EnterpriseClientException {
     return packagesApiRequests.listPackages().data;
   }
 
