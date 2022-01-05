@@ -33,10 +33,20 @@ public final class EnterprisePluginClient extends PluginClient implements Enterp
   }
 
   @Override
-  public long uploadPackage(UUID packageId, File file) throws EnterpriseClientException {
-    nonNullParam(packageId, "packageId");
+  public long uploadPackage(UUID packageId, File file)
+      throws EnterpriseClientException {
+    nonNullParam(file, "packageId");
     nonNullParam(file, "file");
     return enterpriseClient.uploadPackageWithChecksum(packageId, file);
+  }
+
+  @Override
+  public long uploadPackageWithSimulationId(UUID simulationId, File file)
+      throws EnterpriseClientException {
+    nonNullParam(file, "simulationId");
+    nonNullParam(file, "file");
+    Simulation simulation = enterpriseClient.getSimulation(simulationId);
+    return enterpriseClient.uploadPackageWithChecksum(simulation.pkgId, file);
   }
 
   @Override
