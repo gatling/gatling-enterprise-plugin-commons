@@ -75,6 +75,7 @@ public interface EnterprisePlugin {
    * @param packageId Optional
    * @param systemProperties Required, can be an empty Map
    * @param file Required
+   * @throws SimulationStartException if simulation start failed after creation
    */
   SimulationStartResult createAndStartSimulation(
       UUID teamId,

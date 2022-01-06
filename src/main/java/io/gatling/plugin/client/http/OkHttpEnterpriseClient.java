@@ -22,7 +22,6 @@ import io.gatling.plugin.client.EnterpriseClient;
 import io.gatling.plugin.exceptions.ApiCallIOException;
 import io.gatling.plugin.exceptions.EnterprisePluginException;
 import io.gatling.plugin.exceptions.PackageNotFoundException;
-import io.gatling.plugin.exceptions.SimulationStartException;
 import io.gatling.plugin.io.PluginLogger;
 import io.gatling.plugin.model.*;
 import io.gatling.plugin.util.checksum.PkgChecksum;
@@ -119,7 +118,7 @@ public final class OkHttpEnterpriseClient implements EnterpriseClient {
 
   @Override
   public RunSummary startSimulation(UUID simulationId, Map<String, String> systemProperties)
-      throws EnterpriseClientException {
+      throws EnterprisePluginException {
 
     final List<SystemProperty> sysPropsList =
         systemProperties.entrySet().stream()

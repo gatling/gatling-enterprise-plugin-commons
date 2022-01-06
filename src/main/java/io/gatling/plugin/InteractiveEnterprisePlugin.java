@@ -56,6 +56,7 @@ public interface InteractiveEnterprisePlugin {
    * @param systemProperties Required, can be an empty map; override conflicting system properties
    *     when running the simulation
    * @param file Required, path to the packaged JAR file to upload and run
+   * @throws SimulationStartException if simulation start failed after creation
    */
   SimulationStartResult createOrStartSimulation(
       UUID teamId,

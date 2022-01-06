@@ -20,6 +20,7 @@ import static io.gatling.plugin.util.ObjectsUtil.nonNullParam;
 
 import io.gatling.plugin.client.EnterpriseClient;
 import io.gatling.plugin.exceptions.EnterprisePluginException;
+import io.gatling.plugin.exceptions.SimulationStartException;
 import io.gatling.plugin.io.PluginIO;
 import io.gatling.plugin.io.PluginLogger;
 import io.gatling.plugin.io.input.InputChoice;
@@ -147,9 +148,12 @@ public final class InteractiveEnterprisePluginClient extends PluginClient
         enterpriseClient.createSimulation(
             simulationName, team.id, simulationClass, pkg.id, hostsByPool);
 
-    RunSummary runSummary = enterpriseClient.startSimulation(simulation.id, systemProperties);
-
-    return new SimulationStartResult(simulation, runSummary, true);
+    try {
+      RunSummary runSummary = enterpriseClient.startSimulation(simulation.id, systemProperties);
+      return new SimulationStartResult(simulation, runSummary, true);
+    } catch (EnterprisePluginException e) {
+      throw new SimulationStartException(simulation, e);
+    }
   }
 
   private String chooseSimulationClass(
