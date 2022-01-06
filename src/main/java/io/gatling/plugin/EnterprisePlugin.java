@@ -38,12 +38,20 @@ import java.util.UUID;
 public interface EnterprisePlugin {
 
   /**
-   * Upload file to the package associated with given ID
+   * Upload file to the package associated with given packageId
    *
    * @param packageId Required
    * @param file Path to the packaged JAR file to upload and run; required
    */
   long uploadPackage(UUID packageId, File file) throws EnterpriseClientException;
+
+  /**
+   * Upload file to the package associated to the given simulationId
+   *
+   * @param simulationId Required
+   * @param file Path to the packaged JAR file to upload and run; required
+   */
+  long uploadPackageWithSimulationId(UUID simulationId, File file) throws EnterpriseClientException;
 
   /**
    * Upload file to the package configured on the given simulation ID, and start the simulation
