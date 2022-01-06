@@ -58,10 +58,10 @@ public interface EnterpriseClient {
   /**
    * @param simulationId Required
    * @param systemProperties Required (can be an empty map)
-   * @throws SimulationNotFoundException if the simulationId does not exist
+   * @throws SimulationStartException when start failed for any reason
    */
   RunSummary startSimulation(UUID simulationId, Map<String, String> systemProperties)
-      throws EnterpriseClientException;
+      throws EnterprisePluginException;
 
   long uploadPackageWithChecksum(UUID packageId, File file) throws EnterprisePluginException;
 

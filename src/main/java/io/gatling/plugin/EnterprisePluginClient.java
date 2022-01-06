@@ -136,7 +136,12 @@ public final class EnterprisePluginClient extends PluginClient implements Enterp
 
     final Simulation simulation =
         enterpriseClient.createSimulation(simulationName, team.id, className, pkg.id, hostsByPool);
-    final RunSummary runSummary = enterpriseClient.startSimulation(simulation.id, systemProperties);
-    return new SimulationStartResult(simulation, runSummary, true);
+    try {
+      final RunSummary runSummary =
+          enterpriseClient.startSimulation(simulation.id, systemProperties);
+      return new SimulationStartResult(simulation, runSummary, true);
+    } catch (EnterprisePluginException e) {
+      throw new SimulationStartException(simulation, e);
+    }
   }
 }
