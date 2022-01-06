@@ -28,11 +28,11 @@ public class JavaPluginScanner implements PluginScanner {
 
   @Override
   public String readString() {
-    return scanner.nextLine();
+    return scanner.nextLine().trim();
   }
 
   @Override
   public int readInt() throws NumberFormatException {
-    return Integer.parseInt(readString());
+    return Integer.parseInt(readString().trim());
   }
 }

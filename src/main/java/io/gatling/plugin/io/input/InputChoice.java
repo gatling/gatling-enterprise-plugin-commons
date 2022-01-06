@@ -20,22 +20,30 @@ import io.gatling.plugin.io.PluginIO;
 import io.gatling.plugin.io.PluginLogger;
 import io.gatling.plugin.io.PluginScanner;
 import io.gatling.plugin.util.LambdaExceptionUtil.ConsumerWithExceptions;
-import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class InputChoice {
+public final class InputChoice {
 
   private final PluginLogger logger;
   private final PluginScanner scanner;
   private static final int NOT_READ = -1;
-  private static final String CUSTOM_ENTRY = "Custom entry";
 
   public InputChoice(PluginIO pluginIO) {
     this.scanner = pluginIO.getScanner();
     this.logger = pluginIO.getLogger();
+  }
+
+  /**
+   * Read a non negative number, inferior to max
+   *
+   * @param inclusiveMin inclusive minimum value of user entry
+   */
+  public int inputInt(int inclusiveMin) {
+    return inputInt(inclusiveMin, Integer.MAX_VALUE);
   }
 
   /**
@@ -56,40 +64,29 @@ public class InputChoice {
           result = read;
         }
       } catch (NumberFormatException e) {
-        logger.error("Please, choose a valid number");
+        logger.error("Enter a valid number");
       }
     } while (result <= NOT_READ);
     return result;
   }
 
-  public String inputString(ConsumerWithExceptions<String, IllegalArgumentException> readCustom) {
-    String result = null;
-    do {
-      logger.info("Waiting for user input...");
-      String read = scanner.readString();
-      try {
-        readCustom.accept(read);
-        result = read;
-      } catch (IllegalArgumentException e) {
-        logger.error(String.format("Invalid custom entry: %s", e.getMessage()));
-      }
-    } while (result == null);
-    return result;
+  public String inputString(ConsumerWithExceptions<String, IllegalArgumentException> validator) {
+    return inputStringWithDefault(null, validator);
   }
 
-  public String inputFromStringListWithCustom(
-      Set<String> choices, ConsumerWithExceptions<String, IllegalArgumentException> readCustom) {
-    if (choices.isEmpty()) {
-      return inputString(readCustom);
-    } else {
-      List<String> entries = new ArrayList<>(choices);
-      int customEntryIndex = entries.size();
-      entries.add(CUSTOM_ENTRY);
-      int index = indexFromList(entries, Function.identity());
-      if (index == customEntryIndex) {
-        return inputString(readCustom);
-      } else {
-        return entries.get(index);
+  public String inputStringWithDefault(
+      String defaultValue, ConsumerWithExceptions<String, IllegalArgumentException> validator) {
+    while (true) {
+      logger.info("Waiting for user input...");
+      final String read = scanner.readString();
+      if (read.isEmpty() && defaultValue != null) {
+        return defaultValue;
+      }
+      try {
+        validator.accept(read);
+        return read;
+      } catch (IllegalArgumentException e) {
+        logger.error(e.getMessage());
       }
     }
   }
@@ -99,10 +96,17 @@ public class InputChoice {
    *
    * @param choices possible result, should never be empty
    * @param show used to display a choice
+   * @param orderBy optional, a comparator used for sorting the list of choices
    */
-  public <T> T inputFromList(Set<T> choices, Function<T, String> show) {
-    List<T> entries = new ArrayList<>(choices);
-    return entries.get(indexFromList(entries, show));
+  public <T> T inputFromList(List<T> choices, Function<T, String> show, Comparator<T> orderBy) {
+    final List<T> sortedChoices =
+        orderBy != null ? choices.stream().sorted(orderBy).collect(Collectors.toList()) : choices;
+    return sortedChoices.get(indexFromList(sortedChoices, show));
+  }
+
+  public String inputFromStringList(List<String> choices, boolean sorted) {
+    final Comparator<String> comparator = sorted ? Comparator.comparing(Function.identity()) : null;
+    return inputFromList(choices, Function.identity(), comparator);
   }
 
   /**
@@ -115,19 +119,13 @@ public class InputChoice {
   private <T> int indexFromList(List<T> entries, Function<T, String> show) {
     if (entries.isEmpty()) {
       throw new IllegalArgumentException("Choices set is empty");
-    } else if (entries.size() == 1) {
-      T choice = entries.get(0);
-      logger.info(
-          show.apply(choice) + " has been choosen by default as it's the only available choice");
-      return 0;
-    } else {
-      logger.info("Type the number corresponding to your choice and press enter");
-      int entriesSize = entries.size();
-      IntStream.range(0, entriesSize)
-          .forEach(
-              index ->
-                  logger.info(String.format("[%d] %s", index, show.apply(entries.get(index)))));
-      return inputInt(0, entriesSize);
     }
+
+    logger.info("Type the number corresponding to your choice and press enter");
+    int entriesSize = entries.size();
+    IntStream.range(0, entriesSize)
+        .forEach(
+            index -> logger.info(String.format("[%d] %s", index, show.apply(entries.get(index)))));
+    return inputInt(0, entriesSize);
   }
 }

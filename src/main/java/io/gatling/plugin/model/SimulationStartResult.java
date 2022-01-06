@@ -20,35 +20,40 @@ import static io.gatling.plugin.util.ObjectsUtil.nonNullParam;
 
 import java.util.Objects;
 
-public class SimulationAndRunSummary {
+public class SimulationStartResult {
 
   public final Simulation simulation;
   public final RunSummary runSummary;
+  public final boolean createdSimulation;
 
-  public SimulationAndRunSummary(Simulation simulation, RunSummary runSummary) {
+  public SimulationStartResult(
+      Simulation simulation, RunSummary runSummary, boolean createdSimulation) {
     nonNullParam(simulation, "simulation");
     nonNullParam(runSummary, "runSummary");
     this.simulation = simulation;
     this.runSummary = runSummary;
+    this.createdSimulation = createdSimulation;
   }
 
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-    SimulationAndRunSummary that = (SimulationAndRunSummary) o;
+    SimulationStartResult that = (SimulationStartResult) o;
     return Objects.equals(simulation, that.simulation)
-        && Objects.equals(runSummary, that.runSummary);
+        && Objects.equals(runSummary, that.runSummary)
+        && Objects.equals(createdSimulation, that.createdSimulation);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(simulation, runSummary);
+    return Objects.hash(simulation, runSummary, createdSimulation);
   }
 
   @Override
   public String toString() {
     return String.format(
-        "SimulationAndRunSummary{simulation=%s, runSummary=%s}", simulation, runSummary);
+        "SimulationAndRunSummary{simulation=%s, runSummary=%s, createdSimulation=%s}",
+        simulation, runSummary, createdSimulation);
   }
 }

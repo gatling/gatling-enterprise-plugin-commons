@@ -19,6 +19,6 @@ package io.gatling.plugin.client.exceptions;
 public final class ForbiddenApiCallException extends EnterpriseClientException {
   public ForbiddenApiCallException() {
     super(
-        "API token valid but lacks required privileges: please configure a token with the role 'All' (see https://gatling.io/docs/enterprise/cloud/reference/admin/api_tokens/)");
+        "API token valid but lacks required privileges: please configure a token with the role 'Configure' (see https://gatling.io/docs/enterprise/cloud/reference/admin/api_tokens/)");
   }
 }

@@ -24,10 +24,10 @@ import java.util.List;
 import java.util.Objects;
 
 public final class Packages {
-  public final List<PackageIndex> data;
+  public final List<PkgIndex> data;
 
   @JsonCreator
-  public Packages(@JsonProperty(value = "data", required = true) List<PackageIndex> data) {
+  public Packages(@JsonProperty(value = "data", required = true) List<PkgIndex> data) {
     nonNullParam(data, "data");
     this.data = data;
   }

@@ -17,7 +17,7 @@
 package io.gatling.plugin;
 
 import io.gatling.plugin.client.exceptions.*;
-import io.gatling.plugin.model.SimulationAndRunSummary;
+import io.gatling.plugin.model.SimulationStartResult;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
@@ -45,22 +45,25 @@ public interface InteractiveEnterprisePlugin {
   /**
    * Create and start a simulation with given parameters
    *
-   * @param teamId Optional, if not null and the team exists, will be automatically pick
+   * @param teamId Optional, if not null, will be automatically picked
    * @param groupId Optional, if not null, will prefix the proposed package name
    * @param artifactId Optional, if not null, will suffix the proposed package name
-   * @param className Optional, if not null, will be added to the list of available classNames
-   * @param classNames Required, the list of potential Simulation class names in the project,
-   *     required
+   * @param simulationClass Optional, if not null, will be automatically picked
+   * @param discoveredSimulationClasses Required, the list of potential simulation classes in the
+   *     project, required
+   * @param packageId Optional, if not null, will be automatically picked when creating a new
+   *     simulation
    * @param systemProperties Required, can be an empty map; override conflicting system properties
    *     when running the simulation
    * @param file Required, path to the packaged JAR file to upload and run
    */
-  SimulationAndRunSummary createOrStartSimulation(
+  SimulationStartResult createOrStartSimulation(
       UUID teamId,
       String groupId,
       String artifactId,
-      String className,
-      List<String> classNames,
+      String simulationClass,
+      List<String> discoveredSimulationClasses,
+      UUID packageId,
       Map<String, String> systemProperties,
       File file)
       throws EnterpriseClientException, EmptyChoicesException;

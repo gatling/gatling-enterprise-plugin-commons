@@ -17,7 +17,7 @@
 package io.gatling.plugin;
 
 import io.gatling.plugin.client.exceptions.*;
-import io.gatling.plugin.model.SimulationAndRunSummary;
+import io.gatling.plugin.model.SimulationStartResult;
 import java.io.File;
 import java.util.Map;
 import java.util.UUID;
@@ -61,7 +61,7 @@ public interface EnterprisePlugin {
    * @param file Required, Path to the packaged JAR file to upload and run
    * @throws SimulationNotFoundException if the simulationId does not exist
    */
-  SimulationAndRunSummary uploadPackageAndStartSimulation(
+  SimulationStartResult uploadPackageAndStartSimulation(
       UUID simulationId, Map<String, String> systemProperties, File file)
       throws EnterpriseClientException;
 
@@ -71,13 +71,17 @@ public interface EnterprisePlugin {
    * @param teamId Optional
    * @param groupId Optional
    * @param artifactId Required
-   * @param className Required
+   * @param simulationClass Required
+   * @param packageId Optional
+   * @param systemProperties Required, can be an empty Map
+   * @param file Required
    */
-  SimulationAndRunSummary createAndStartSimulation(
+  SimulationStartResult createAndStartSimulation(
       UUID teamId,
       String groupId,
       String artifactId,
-      String className,
+      String simulationClass,
+      UUID packageId,
       Map<String, String> systemProperties,
       File file)
       throws EnterpriseClientException;
