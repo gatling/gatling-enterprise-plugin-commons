@@ -14,21 +14,11 @@
  * limitations under the License.
  */
 
-package io.gatling.plugin.client.exceptions;
+package io.gatling.plugin.exceptions;
 
-import io.gatling.plugin.model.Team;
-import java.util.List;
-
-public final class SeveralTeamsFoundException extends EnterpriseClientException {
-
-  private final List<Team> availableTeams;
-
-  public SeveralTeamsFoundException(List<Team> availableTeams, String message) {
-    super(message);
-    this.availableTeams = availableTeams;
-  }
-
-  public List<Team> getAvailableTeams() {
-    return availableTeams;
+public final class UnauthorizedApiCallException extends EnterprisePluginException {
+  public UnauthorizedApiCallException() {
+    super(
+        "API token not recognized: please configure a valid token (with the role 'All'; see https://gatling.io/docs/enterprise/cloud/reference/admin/api_tokens/)");
   }
 }

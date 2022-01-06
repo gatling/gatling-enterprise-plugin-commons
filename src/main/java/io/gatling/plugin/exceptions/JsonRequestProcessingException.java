@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-package io.gatling.plugin.client.exceptions;
+package io.gatling.plugin.exceptions;
 
-import java.io.IOException;
+public final class JsonRequestProcessingException extends RuntimeException {
 
-public final class ApiCallIOException extends EnterpriseClientException {
-  public ApiCallIOException(IOException cause) {
-    super("Unable to call the Gatling Enterprise public API", cause);
+  public JsonRequestProcessingException(Throwable cause) {
+    super("Unable to serialize JSON request to the Gatling Enterprise API", cause);
   }
 }

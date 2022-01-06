@@ -18,8 +18,8 @@ package io.gatling.plugin.util;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import io.gatling.plugin.client.exceptions.*;
 import io.gatling.plugin.client.http.OkHttpEnterpriseClient;
+import io.gatling.plugin.exceptions.*;
 import io.gatling.plugin.io.PluginLogger;
 import java.io.File;
 import java.net.HttpURLConnection;
@@ -64,7 +64,7 @@ public class OkHttpEnterpriseClientTest {
               noOpLogger, OK_HTTP_CLIENT, server.url("/").url(), TOKEN, "client", "version");
       server.takeRequest(); // Remove checkVersion enqueue request
       return client;
-    } catch (EnterpriseClientException | InterruptedException e) {
+    } catch (EnterprisePluginException | InterruptedException e) {
       throw new IllegalStateException(
           "Test version support should always work from enqueue response", e);
     }
@@ -72,7 +72,7 @@ public class OkHttpEnterpriseClientTest {
 
   @Test
   void UploadPackage_ContentType_OctetStream()
-      throws EnterpriseClientException, InterruptedException {
+      throws EnterprisePluginException, InterruptedException {
     MockWebServer server =
         mockWebServer(new MockResponse().setResponseCode(HttpURLConnection.HTTP_OK));
     OkHttpEnterpriseClient client = okHttpEnterpriseClientMockWebServer(server);
@@ -82,7 +82,7 @@ public class OkHttpEnterpriseClientTest {
 
   @Test
   void UploadPackage_ContentLength_MavenSampleLength()
-      throws EnterpriseClientException, InterruptedException {
+      throws EnterprisePluginException, InterruptedException {
     MockWebServer server =
         mockWebServer(new MockResponse().setResponseCode(HttpURLConnection.HTTP_OK));
     OkHttpEnterpriseClient client = okHttpEnterpriseClientMockWebServer(server);
@@ -91,23 +91,23 @@ public class OkHttpEnterpriseClientTest {
         ARTIFACT_FILE.length(), Long.valueOf(server.takeRequest().getHeader("Content-Length")));
   }
 
-  private EnterpriseClientException UploadPackage_Status_EnterpriseClientException(int code) {
+  private EnterprisePluginException UploadPackage_Status_EnterpriseClientException(int code) {
     MockWebServer server = mockWebServer(new MockResponse().setResponseCode(code));
     OkHttpEnterpriseClient client = okHttpEnterpriseClientMockWebServer(server);
     return assertThrows(
-        EnterpriseClientException.class, () -> client.uploadPackage(ARTIFACT_ID, ARTIFACT_FILE));
+        EnterprisePluginException.class, () -> client.uploadPackage(ARTIFACT_ID, ARTIFACT_FILE));
   }
 
   @Test
   void UploadPackage_StatusNotFound_EnterpriseClientException() {
-    EnterpriseClientException e =
+    EnterprisePluginException e =
         UploadPackage_Status_EnterpriseClientException(HttpURLConnection.HTTP_NOT_FOUND);
     assertTrue(e instanceof PackageNotFoundException);
   }
 
   @Test
   void UploadPackage_StatusEntityTooLarge_EnterpriseClientException() {
-    EnterpriseClientException e =
+    EnterprisePluginException e =
         UploadPackage_Status_EnterpriseClientException(HttpURLConnection.HTTP_ENTITY_TOO_LARGE);
     assertTrue(e instanceof InvalidApiCallException);
     assertTrue(e.getMessage().contains("Package exceeds maximum allowed size (5 GB)"));
@@ -115,14 +115,14 @@ public class OkHttpEnterpriseClientTest {
 
   @Test
   void UploadPackage_StatusUnauthorized_EnterpriseClientException() {
-    EnterpriseClientException e =
+    EnterprisePluginException e =
         UploadPackage_Status_EnterpriseClientException(HttpURLConnection.HTTP_UNAUTHORIZED);
     assertTrue(e instanceof UnauthorizedApiCallException);
   }
 
   @Test
   void UploadPackage_StatusUnknown_EnterpriseClientException() {
-    EnterpriseClientException e = UploadPackage_Status_EnterpriseClientException(666);
+    EnterprisePluginException e = UploadPackage_Status_EnterpriseClientException(666);
     assertTrue(e instanceof UnhandledApiCallException);
     assertTrue(e.getMessage().contains("666"));
   }

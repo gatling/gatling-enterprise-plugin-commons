@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-package io.gatling.plugin.client.exceptions;
+package io.gatling.plugin.exceptions;
 
-public abstract class EnterpriseClientException extends Exception {
+public abstract class EnterprisePluginException extends Exception {
 
-  public EnterpriseClientException(String message) {
+  public EnterprisePluginException(String message) {
     super(message);
   }
 
-  public EnterpriseClientException(String message, Throwable cause) {
+  public EnterprisePluginException(String message, Throwable cause) {
     super(message, cause);
   }
 }

@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package io.gatling.plugin.client.exceptions;
+package io.gatling.plugin.exceptions;
 
-import java.util.UUID;
+import java.io.IOException;
 
-public final class SimulationNotFoundException extends EnterpriseClientException {
-  public SimulationNotFoundException(UUID simulationId) {
-    super("Simulation with id " + simulationId + " not found");
+public final class ApiCallIOException extends EnterprisePluginException {
+  public ApiCallIOException(IOException cause) {
+    super("Unable to call the Gatling Enterprise public API", cause);
   }
 }

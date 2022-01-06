@@ -19,9 +19,10 @@ package io.gatling.plugin.client.http;
 import static io.gatling.plugin.util.ObjectsUtil.nonNullParam;
 
 import io.gatling.plugin.client.EnterpriseClient;
-import io.gatling.plugin.client.exceptions.ApiCallIOException;
-import io.gatling.plugin.client.exceptions.EnterpriseClientException;
-import io.gatling.plugin.client.exceptions.PackageNotFoundException;
+import io.gatling.plugin.exceptions.ApiCallIOException;
+import io.gatling.plugin.exceptions.EnterprisePluginException;
+import io.gatling.plugin.exceptions.PackageNotFoundException;
+import io.gatling.plugin.exceptions.SimulationStartException;
 import io.gatling.plugin.io.PluginLogger;
 import io.gatling.plugin.model.*;
 import io.gatling.plugin.util.checksum.PkgChecksum;
@@ -51,7 +52,7 @@ public final class OkHttpEnterpriseClient implements EnterpriseClient {
       String token,
       String client,
       String version)
-      throws EnterpriseClientException {
+      throws EnterprisePluginException {
     OkHttpEnterpriseClient enterpriseClient =
         new OkHttpEnterpriseClient(logger, okHttpClient, url, token);
     enterpriseClient.privateApiRequests.checkVersionSupport(client, version);
@@ -60,7 +61,7 @@ public final class OkHttpEnterpriseClient implements EnterpriseClient {
 
   public static OkHttpEnterpriseClient getInstance(
       PluginLogger logger, URL url, String token, String client, String version)
-      throws EnterpriseClientException {
+      throws EnterprisePluginException {
     return getInstance(logger, new OkHttpClient(), url, token, client, version);
   }
 
@@ -82,37 +83,37 @@ public final class OkHttpEnterpriseClient implements EnterpriseClient {
   }
 
   @Override
-  public List<Simulation> getSimulations() throws EnterpriseClientException {
+  public List<Simulation> getSimulations() throws EnterprisePluginException {
     return simulationsApiRequests.listSimulations().data;
   }
 
   @Override
-  public Simulation getSimulation(UUID simulationId) throws EnterpriseClientException {
+  public Simulation getSimulation(UUID simulationId) throws EnterprisePluginException {
     return simulationsApiRequests.getSimulation(simulationId);
   }
 
   @Override
-  public List<Team> getTeams() throws EnterpriseClientException {
+  public List<Team> getTeams() throws EnterprisePluginException {
     return teamsApiRequests.listTeams().data;
   }
 
   @Override
-  public List<Pool> getPools() throws EnterpriseClientException {
+  public List<Pool> getPools() throws EnterprisePluginException {
     return poolsApiRequests.listPools().data;
   }
 
   @Override
-  public List<PkgIndex> getPackages() throws EnterpriseClientException {
+  public List<PkgIndex> getPackages() throws EnterprisePluginException {
     return packagesApiRequests.listPackages().data;
   }
 
   @Override
-  public Pkg getPackage(UUID pkgId) throws EnterpriseClientException {
+  public Pkg getPackage(UUID pkgId) throws EnterprisePluginException {
     return packagesApiRequests.readPackage(pkgId);
   }
 
   @Override
-  public long uploadPackage(UUID packageId, File file) throws EnterpriseClientException {
+  public long uploadPackage(UUID packageId, File file) throws EnterprisePluginException {
     return packagesApiRequests.uploadPackage(packageId, file);
   }
 
@@ -128,7 +129,7 @@ public final class OkHttpEnterpriseClient implements EnterpriseClient {
     return simulationsApiRequests.startSimulation(simulationId, sysPropsList);
   }
 
-  private boolean checksumComparison(UUID packageId, File file) throws EnterpriseClientException {
+  private boolean checksumComparison(UUID packageId, File file) throws EnterprisePluginException {
     try {
       Pkg pkg = getPackage(packageId);
       return pkg.file != null && PkgChecksum.computeChecksum(file).equals(pkg.file.checksum);
@@ -141,7 +142,7 @@ public final class OkHttpEnterpriseClient implements EnterpriseClient {
 
   @Override
   public long uploadPackageWithChecksum(UUID packageId, File file)
-      throws EnterpriseClientException {
+      throws EnterprisePluginException {
     if (checksumComparison(packageId, file)) {
       logger.info("No code changes detected, skipping package upload");
       return file.length();
@@ -157,7 +158,7 @@ public final class OkHttpEnterpriseClient implements EnterpriseClient {
       String className,
       UUID pkgId,
       Map<UUID, HostByPool> hostsByPool)
-      throws EnterpriseClientException {
+      throws EnterprisePluginException {
     return simulationsApiRequests.createSimulation(
         new SimulationCreationPayload(
             simulationName,
@@ -174,7 +175,7 @@ public final class OkHttpEnterpriseClient implements EnterpriseClient {
   }
 
   @Override
-  public Pkg createPackage(String packageName, UUID teamId) throws EnterpriseClientException {
+  public Pkg createPackage(String packageName, UUID teamId) throws EnterprisePluginException {
     return packagesApiRequests.createPackage(new PackageCreationPayload(packageName, teamId));
   }
 }

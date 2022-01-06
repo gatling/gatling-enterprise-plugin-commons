@@ -16,7 +16,7 @@
 
 package io.gatling.plugin.client;
 
-import io.gatling.plugin.client.exceptions.*;
+import io.gatling.plugin.exceptions.*;
 import io.gatling.plugin.model.*;
 import java.io.File;
 import java.util.List;
@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * The following exception sub-classes of {@link EnterpriseClientException} can be thrown by all
+ * The following exception sub-classes of {@link EnterprisePluginException} can be thrown by all
  * methods of this public API:
  *
  * <ul>
@@ -36,24 +36,24 @@ import java.util.UUID;
  */
 public interface EnterpriseClient {
 
-  List<Simulation> getSimulations() throws EnterpriseClientException;
+  List<Simulation> getSimulations() throws EnterprisePluginException;
 
-  public Simulation getSimulation(UUID simulationId) throws EnterpriseClientException;
+  public Simulation getSimulation(UUID simulationId) throws EnterprisePluginException;
 
-  public List<Team> getTeams() throws EnterpriseClientException;
+  public List<Team> getTeams() throws EnterprisePluginException;
 
-  public List<Pool> getPools() throws EnterpriseClientException;
+  public List<Pool> getPools() throws EnterprisePluginException;
 
-  List<PkgIndex> getPackages() throws EnterpriseClientException;
+  List<PkgIndex> getPackages() throws EnterprisePluginException;
 
-  public Pkg getPackage(UUID pkgId) throws EnterpriseClientException;
+  public Pkg getPackage(UUID pkgId) throws EnterprisePluginException;
 
   /**
    * @param packageId Required
    * @param file Path to the packaged JAR file to upload; required
    * @throws PackageNotFoundException if the packageId does not exist
    */
-  long uploadPackage(UUID packageId, File file) throws EnterpriseClientException;
+  long uploadPackage(UUID packageId, File file) throws EnterprisePluginException;
 
   /**
    * @param simulationId Required
@@ -63,7 +63,7 @@ public interface EnterpriseClient {
   RunSummary startSimulation(UUID simulationId, Map<String, String> systemProperties)
       throws EnterpriseClientException;
 
-  long uploadPackageWithChecksum(UUID packageId, File file) throws EnterpriseClientException;
+  long uploadPackageWithChecksum(UUID packageId, File file) throws EnterprisePluginException;
 
   Simulation createSimulation(
       String simulationName,
@@ -71,7 +71,7 @@ public interface EnterpriseClient {
       String className,
       UUID pkgId,
       Map<UUID, HostByPool> hostsByPool)
-      throws EnterpriseClientException;
+      throws EnterprisePluginException;
 
-  Pkg createPackage(String packageName, UUID teamId) throws EnterpriseClientException;
+  Pkg createPackage(String packageName, UUID teamId) throws EnterprisePluginException;
 }
