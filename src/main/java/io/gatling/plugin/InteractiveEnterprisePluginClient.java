@@ -28,7 +28,6 @@ import io.gatling.plugin.util.LambdaExceptionUtil.ConsumerWithExceptions;
 import java.io.File;
 import java.util.*;
 import java.util.Collections;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public final class InteractiveEnterprisePluginClient extends PluginClient
@@ -37,7 +36,6 @@ public final class InteractiveEnterprisePluginClient extends PluginClient
   private final InputChoice inputChoice;
   private final PluginLogger logger;
 
-  private static final int EXCLUSIVE_MAX_POOL_SIZE = 11;
   private static final int DEFAULT_HOST_WEIGHT = 100;
 
   public InteractiveEnterprisePluginClient(EnterpriseClient enterpriseClient, PluginIO pluginIO) {
@@ -46,49 +44,43 @@ public final class InteractiveEnterprisePluginClient extends PluginClient
     this.logger = pluginIO.getLogger();
   }
 
-  private boolean createOrStartSimulation() {
-    logger.info("Do you want to create a new simulation or start an existing one?");
-    String create = "Create a new Simulation on Gatling Enterprise, then start it";
-    String start = "Start an existing Simulation on Gatling Enterprise";
-    HashSet<String> choices = new HashSet<>();
-    choices.add(create);
-    choices.add(start);
-    return inputChoice.inputFromList(choices, Function.identity()).equals(create);
-  }
-
-  public SimulationAndRunSummary createOrStartSimulation(
+  public SimulationStartResult createOrStartSimulation(
       UUID teamId,
       String groupId,
       String artifactId,
-      String className,
-      List<String> classNames,
+      String simulationClass,
+      List<String> discoveredSimulationClasses,
+      UUID configuredPackageId,
       Map<String, String> systemProperties,
       File file)
       throws EnterpriseClientException, EmptyChoicesException {
+    nonNullParam(discoveredSimulationClasses, "discoveredSimulationClasses");
     nonNullParam(systemProperties, "systemProperties");
     nonNullParam(file, "file");
 
     List<Simulation> simulations = enterpriseClient.getSimulations();
-    boolean createSimulation = simulations.isEmpty() || createOrStartSimulation();
+    boolean createSimulation = simulations.isEmpty() || chooseIfCreateSimulation();
 
     return createSimulation
         ? createAndStart(
-            teamId, groupId, artifactId, className, classNames, file, simulations, systemProperties)
+            teamId,
+            groupId,
+            artifactId,
+            simulationClass,
+            discoveredSimulationClasses,
+            configuredPackageId,
+            file,
+            simulations,
+            systemProperties)
         : startSimulation(file, systemProperties, simulations);
   }
 
-  private Simulation chooseSimulation(List<Simulation> simulations) throws EmptyChoicesException {
-    if (simulations.isEmpty()) {
-      throw new EmptyChoicesException("simulations");
-    }
-
-    if (simulations.size() == 1) {
-      Simulation simulation = simulations.get(0);
-      logger.info("Picking only available simulation: " + Show.simulation(simulation));
-      return simulation;
-    } else {
-      return inputChoice.inputFromList(new HashSet<>(simulations), Show::simulation);
-    }
+  private boolean chooseIfCreateSimulation() {
+    logger.info("Do you want to create a new simulation or start an existing one?");
+    final String create = "Create a new Simulation on Gatling Enterprise, then start it";
+    final String start = "Start an existing Simulation on Gatling Enterprise";
+    final List<String> choices = Arrays.asList(create, start);
+    return inputChoice.inputFromStringList(choices, false).equals(create);
   }
 
   private void uploadPackage(UUID artifactId, File packageFile) throws EnterpriseClientException {
@@ -97,83 +89,113 @@ public final class InteractiveEnterprisePluginClient extends PluginClient
     logger.info("Package uploaded");
   }
 
-  private SimulationAndRunSummary startSimulation(
+  private SimulationStartResult startSimulation(
       File packageFile, Map<String, String> systemProperties, List<Simulation> simulations)
       throws EnterpriseClientException, EmptyChoicesException {
     logger.info("Proceeding to start simulation");
-    Simulation simulation = chooseSimulation(simulations);
+
+    if (simulations.isEmpty()) {
+      throw new EmptyChoicesException("simulations");
+    }
+    final Simulation simulation =
+        inputChoice.inputFromList(simulations, Show::simulation, Comparator.comparing(s -> s.name));
 
     uploadPackage(simulation.pkgId, packageFile);
 
-    RunSummary runSummary = enterpriseClient.startSimulation(simulation.id, systemProperties);
+    final RunSummary runSummary = enterpriseClient.startSimulation(simulation.id, systemProperties);
 
     // TODO: custom pools from configuration, MISC-313
-    return new SimulationAndRunSummary(simulation, runSummary);
-  }
-
-  private int chooseSize() {
-    logger.info(
-        String.format(
-            "Please, enter the number of load injectors (must be between 1 and %d)",
-            EXCLUSIVE_MAX_POOL_SIZE - 1));
-    return inputChoice.inputInt(1, EXCLUSIVE_MAX_POOL_SIZE);
+    return new SimulationStartResult(simulation, runSummary, false);
   }
 
   /**
    * Create and start a simulation with given parameters
    *
-   * @param configurationTeamId Optional
-   * @param configurationGroupId Optional
-   * @param configurationArtifactId Optional
-   * @param configurationClassName Optional
-   * @param discoveredClassNames List of potential Simulation in the project, required
+   * @param configuredTeamId Optional
+   * @param groupId Optional
+   * @param artifactId Optional
+   * @param configuredSimulationClass Optional
+   * @param discoveredSimulationClasses List of potential Simulations in the project, required
    * @param packageFile Path to the packaged JAR file to upload and run; required
    */
-  private SimulationAndRunSummary createAndStart(
-      UUID configurationTeamId,
-      String configurationGroupId,
-      String configurationArtifactId,
-      String configurationClassName,
-      List<String> discoveredClassNames,
+  private SimulationStartResult createAndStart(
+      UUID configuredTeamId,
+      String groupId,
+      String artifactId,
+      String configuredSimulationClass,
+      List<String> discoveredSimulationClasses,
+      UUID configuredPackageId,
       File packageFile,
       List<Simulation> existingSimulations,
       Map<String, String> systemProperties)
       throws EnterpriseClientException, EmptyChoicesException {
     logger.info("Proceeding to the create simulation step");
-    String className = chooseClassName(configurationClassName, discoveredClassNames);
-    String simulationName = chooseSimulationName(className, existingSimulations);
-    String packageName = choosePackageName(configurationGroupId, configurationArtifactId);
-    Team team = chooseTeam(configurationTeamId);
+    String simulationClass =
+        chooseSimulationClass(configuredSimulationClass, discoveredSimulationClasses);
+    Team team = chooseTeam(configuredTeamId);
+    String simulationName = chooseSimulationName(simulationClass, existingSimulations);
+    Pkg pkg = chooseOrCreatePackage(team.id, groupId, artifactId, configuredPackageId);
     Pool pool = choosePool();
     int size = chooseSize();
 
-    Pkg pkg = enterpriseClient.createPackage(packageName, team.id);
     uploadPackage(pkg.id, packageFile);
 
     // TODO: custom pools from configuration, MISC-313
     Map<UUID, HostByPool> hostsByPool =
         Collections.singletonMap(pool.id, new HostByPool(size, DEFAULT_HOST_WEIGHT));
     Simulation simulation =
-        enterpriseClient.createSimulation(simulationName, team.id, className, pkg.id, hostsByPool);
+        enterpriseClient.createSimulation(
+            simulationName, team.id, simulationClass, pkg.id, hostsByPool);
 
     RunSummary runSummary = enterpriseClient.startSimulation(simulation.id, systemProperties);
 
-    return new SimulationAndRunSummary(simulation, runSummary);
+    return new SimulationStartResult(simulation, runSummary, true);
   }
 
-  private String chooseClassName(String configurationClassName, List<String> discoveredClassNames) {
-    if (discoveredClassNames.isEmpty()) {
-      throw new IllegalStateException(
-          "No simulation class discovered. see https://gatling.io/docs/gatling/reference/current/core/simulation/");
+  private String chooseSimulationClass(
+      String configuredSimulationClass, List<String> discoveredSimulationClasses) {
+    if (configuredSimulationClass != null && !configuredSimulationClass.isEmpty()) {
+      // Always accept explicit simulationClass configuration
+      logger.info("Picking the configured simulation class: " + configuredSimulationClass);
+      return configuredSimulationClass;
     }
 
-    if (configurationClassName != null && discoveredClassNames.contains(configurationClassName)) {
-      logger.info("Picking configured class name: " + configurationClassName);
-      return configurationClassName;
-    } else {
-      logger.info("Choose the class name for your simulation");
-      return inputChoice.inputFromList(new HashSet<>(discoveredClassNames), Function.identity());
+    if (discoveredSimulationClasses.isEmpty()) {
+      throw new IllegalStateException(
+          "No simulation class discovered. Your project should contain at least one simulation (https://gatling.io/docs/gatling/reference/current/core/simulation/).");
     }
+
+    logger.info("Choose a simulation class from the list:");
+    final List<String> choices =
+        discoveredSimulationClasses.stream().sorted().collect(Collectors.toList());
+    return inputChoice.inputFromStringList(choices, true);
+  }
+
+  /** @param configuredTeamId Optional */
+  private Team chooseTeam(UUID configuredTeamId)
+      throws EnterpriseClientException, EmptyChoicesException {
+    final List<Team> teams = enterpriseClient.getTeams();
+
+    if (configuredTeamId != null) {
+      // Always handle explicit configuration first
+      final Team team =
+          teams.stream()
+              .filter(t -> t.id.equals(configuredTeamId))
+              .findFirst()
+              .orElseThrow(
+                  () ->
+                      new IllegalStateException(
+                          "Configured team ID " + configuredTeamId + " was not found"));
+      logger.info(String.format("Picking the configured team: %s (%s)\n", team.id, team.name));
+      return team;
+    }
+
+    if (teams.isEmpty()) {
+      throw new EmptyChoicesException("teams");
+    }
+
+    logger.info("Choose a team from the list:");
+    return inputChoice.inputFromList(teams, Show::team, Comparator.comparing(t -> t.name));
   }
 
   private static String simulationNameFromClassName(String className) {
@@ -181,83 +203,129 @@ public final class InteractiveEnterprisePluginClient extends PluginClient
     return parts[parts.length - 1];
   }
 
-  private String chooseSimulationName(String className, List<Simulation> existingSimulations) {
-    String defaultSimulationName = simulationNameFromClassName(className);
-    List<String> existingSimulationNames =
+  private String chooseSimulationName(
+      String simulationClass, List<Simulation> existingSimulations) {
+    final String defaultSimulationName = simulationNameFromClassName(simulationClass);
+    final List<String> existingSimulationNames =
         existingSimulations.stream()
             .map(simulation -> simulation.name)
             .collect(Collectors.toList());
 
-    ConsumerWithExceptions<String, IllegalArgumentException> validator =
-        simulationName -> {
-          if (existingSimulationNames.contains(simulationName)) {
-            throw new IllegalArgumentException(
-                String.format("Simulation name %s already exist", simulationName));
+    final ConsumerWithExceptions<String, IllegalArgumentException> validator =
+        name -> {
+          if (name.isEmpty()) {
+            throw new IllegalArgumentException("The simulation name should not be empty");
+          }
+          if (existingSimulationNames.contains(name)) {
+            throw new IllegalArgumentException("A simulation named " + name + " already exists");
           }
         };
 
-    if (existingSimulationNames.contains(defaultSimulationName)) {
-      logger.info("Enter simulation name");
-      return inputChoice.inputString(validator);
+    if (!existingSimulationNames.contains(defaultSimulationName)) {
+      logger.info(
+          "Enter a simulation name, or just hit enter to accept the default name ("
+              + defaultSimulationName
+              + ")");
+      return inputChoice.inputStringWithDefault(defaultSimulationName, validator);
     } else {
-      logger.info("Choose the simulation name");
-      return inputChoice.inputFromStringListWithCustom(
-          Collections.singleton(simulationNameFromClassName(className)), validator);
+      logger.info("Enter a simulation name");
+      return inputChoice.inputString(validator);
     }
   }
 
   /**
    * @param groupId Optional
    * @param artifactId Optional
+   * @param configuredPackageId Optional
    */
-  private String choosePackageName(String groupId, String artifactId)
+  private Pkg chooseOrCreatePackage(
+      UUID teamId, String groupId, String artifactId, UUID configuredPackageId)
       throws EnterpriseClientException {
-    List<String> existingPackageNames =
-        enterpriseClient.getPackages().stream().map(pkg -> pkg.name).collect(Collectors.toList());
+    final List<PkgIndex> existingPackages = enterpriseClient.getPackages();
 
-    String defaultPackageName =
+    if (configuredPackageId != null) {
+      // Always handle explicit configuration first
+      final UUID packageId =
+          existingPackages.stream()
+              .filter(p -> p.id.equals(configuredPackageId))
+              .map(p -> p.id)
+              .findFirst()
+              .orElseThrow(
+                  () ->
+                      new IllegalStateException(
+                          "Configured package ID " + configuredPackageId + " was not found"));
+      return enterpriseClient.getPackage(packageId);
+    }
+
+    boolean createPackageChoice = existingPackages.isEmpty() || chooseIfCreatePackage();
+    return createPackageChoice
+        ? createPackage(teamId, groupId, artifactId, existingPackages)
+        : choosePackage(existingPackages);
+  }
+
+  private boolean chooseIfCreatePackage() {
+    logger.info("Do you want to create a new package or upload your project to an existing one?");
+    final String create = "Create a new package on Gatling Enterprise";
+    final String start = "Choose an existing package on Gatling Enterprise";
+    final List<String> choices = Arrays.asList(create, start);
+    return inputChoice.inputFromStringList(choices, false).equals(create);
+  }
+
+  private Pkg choosePackage(List<PkgIndex> existingPackages) throws EnterpriseClientException {
+    logger.info("Choose a package from the list:");
+    final UUID packageId =
+        inputChoice.inputFromList(
+                existingPackages, Show::packageIndex, Comparator.comparing(p -> p.name))
+            .id;
+    return enterpriseClient.getPackage(packageId);
+  }
+
+  private Pkg createPackage(
+      UUID teamId, String groupId, String artifactId, List<PkgIndex> existingPackages)
+      throws EnterpriseClientException {
+    final String defaultPackageName =
         artifactId != null ? (groupId != null ? groupId + ":" + artifactId : artifactId) : null;
+    final Set<String> existingPackageNames =
+        existingPackages.stream().map(p -> p.name).collect(Collectors.toSet());
 
-    ConsumerWithExceptions<String, IllegalArgumentException> packageValidation =
+    final ConsumerWithExceptions<String, IllegalArgumentException> validator =
         name -> {
           if (name.isEmpty()) {
-            throw new IllegalArgumentException("package name should not be empty");
-          } else if (existingPackageNames.contains(name)) {
-            throw new IllegalArgumentException("package name already exist");
+            throw new IllegalArgumentException("The package name should not be empty");
+          }
+          if (existingPackageNames.contains(name)) {
+            throw new IllegalArgumentException("A package named " + name + " already exists");
           }
         };
 
+    final String packageName;
     if (defaultPackageName != null && !existingPackageNames.contains(defaultPackageName)) {
-      Set<String> packageNames = new HashSet<>();
-      packageNames.add(defaultPackageName);
-      logger.info("Please, choose your package name");
-      return inputChoice.inputFromStringListWithCustom(packageNames, packageValidation);
+      logger.info(
+          "Enter a package name, or just hit enter to accept the default name ("
+              + defaultPackageName
+              + ")");
+      packageName = inputChoice.inputStringWithDefault(defaultPackageName, validator);
     } else {
-      logger.info("Please, enter your package name");
-      return inputChoice.inputString(packageValidation);
+      logger.info("Enter a package name");
+      packageName = inputChoice.inputString(validator);
     }
-  }
 
-  /** @param configurationTeamId Optional */
-  private Team chooseTeam(UUID configurationTeamId)
-      throws EnterpriseClientException, EmptyChoicesException {
-    Set<Team> teams = new HashSet<>(enterpriseClient.getTeams());
-    if (teams.isEmpty()) {
-      throw new EmptyChoicesException("teams");
-    } else {
-      return teams.stream()
-          .filter(t -> t.id == configurationTeamId)
-          .findFirst()
-          .orElseGet(() -> inputChoice.inputFromList(teams, Show::team));
-    }
+    return enterpriseClient.createPackage(packageName, teamId);
   }
 
   private Pool choosePool() throws EnterpriseClientException, EmptyChoicesException {
-    Set<Pool> pools = new HashSet<>(enterpriseClient.getPools());
+    final List<Pool> pools = enterpriseClient.getPools();
+
     if (pools.isEmpty()) {
       throw new EmptyChoicesException("pools");
-    } else {
-      return inputChoice.inputFromList(pools, Show::pool);
     }
+
+    logger.info("Choose the load injectors region");
+    return inputChoice.inputFromList(pools, Show::pool, Comparator.comparing(p -> p.name));
+  }
+
+  private int chooseSize() {
+    logger.info("Enter the number of load injectors");
+    return inputChoice.inputInt(1);
   }
 }

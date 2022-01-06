@@ -34,7 +34,7 @@ public final class EnterprisePluginClient extends PluginClient implements Enterp
 
   @Override
   public long uploadPackage(UUID packageId, File file) throws EnterpriseClientException {
-    nonNullParam(file, "packageId");
+    nonNullParam(packageId, "packageId");
     nonNullParam(file, "file");
     return enterpriseClient.uploadPackageWithChecksum(packageId, file);
   }
@@ -49,7 +49,7 @@ public final class EnterprisePluginClient extends PluginClient implements Enterp
   }
 
   @Override
-  public SimulationAndRunSummary uploadPackageAndStartSimulation(
+  public SimulationStartResult uploadPackageAndStartSimulation(
       UUID simulationId, Map<String, String> systemProperties, File file)
       throws EnterpriseClientException {
     nonNullParam(simulationId, "simulationId");
@@ -58,8 +58,30 @@ public final class EnterprisePluginClient extends PluginClient implements Enterp
 
     final Simulation simulation = enterpriseClient.getSimulation(simulationId);
     enterpriseClient.uploadPackageWithChecksum(simulation.pkgId, file);
-    return new SimulationAndRunSummary(
-        simulation, enterpriseClient.startSimulation(simulationId, systemProperties));
+    final RunSummary runSummary = enterpriseClient.startSimulation(simulationId, systemProperties);
+    return new SimulationStartResult(simulation, runSummary, false);
+  }
+
+  @Override
+  public SimulationStartResult createAndStartSimulation(
+      UUID teamId,
+      String groupId,
+      String artifactId,
+      String simulationClass,
+      UUID packageId,
+      Map<String, String> systemProperties,
+      File file)
+      throws EnterpriseClientException {
+    nonEmptyParam(artifactId, "artifactId");
+    nonEmptyParam(simulationClass, "className");
+
+    final Team team = defaultTeam(teamId);
+    final Pkg pkg =
+        packageId != null
+            ? enterpriseClient.getPackage(packageId)
+            : createAndUploadDefaultPackage(team, groupId, artifactId, file);
+    final Map<UUID, HostByPool> hostsByPool = defaultHostByPool();
+    return createAndStartSimulation(team, pkg, simulationClass, hostsByPool, systemProperties);
   }
 
   private Team defaultTeam(UUID teamId) throws EnterpriseClientException {
@@ -83,6 +105,14 @@ public final class EnterprisePluginClient extends PluginClient implements Enterp
     }
   }
 
+  private Pkg createAndUploadDefaultPackage(Team team, String groupId, String artifactId, File file)
+      throws EnterpriseClientException {
+    final String packageName = groupId != null ? groupId + ":" + artifactId : artifactId;
+    final Pkg pkg = enterpriseClient.createPackage(packageName, team.id);
+    enterpriseClient.uploadPackage(pkg.id, file);
+    return pkg;
+  }
+
   private Map<UUID, HostByPool> defaultHostByPool() throws EnterpriseClientException {
     final List<Pool> pools = enterpriseClient.getPools();
     if (pools.isEmpty()) {
@@ -94,15 +124,7 @@ public final class EnterprisePluginClient extends PluginClient implements Enterp
     return Collections.singletonMap(pool.id, new HostByPool(1, 0));
   }
 
-  private Pkg createAndUploadDefaultPackage(Team team, String groupId, String artifactId, File file)
-      throws EnterpriseClientException {
-    final String packageName = groupId != null ? groupId + ":" + artifactId : artifactId;
-    final Pkg pkg = enterpriseClient.createPackage(packageName, team.id);
-    enterpriseClient.uploadPackage(pkg.id, file);
-    return pkg;
-  }
-
-  private SimulationAndRunSummary createAndStartSimulation(
+  private SimulationStartResult createAndStartSimulation(
       Team team,
       Pkg pkg,
       String className,
@@ -115,24 +137,6 @@ public final class EnterprisePluginClient extends PluginClient implements Enterp
     final Simulation simulation =
         enterpriseClient.createSimulation(simulationName, team.id, className, pkg.id, hostsByPool);
     final RunSummary runSummary = enterpriseClient.startSimulation(simulation.id, systemProperties);
-    return new SimulationAndRunSummary(simulation, runSummary);
-  }
-
-  @Override
-  public SimulationAndRunSummary createAndStartSimulation(
-      UUID teamId,
-      String groupId,
-      String artifactId,
-      String className,
-      Map<String, String> systemProperties,
-      File file)
-      throws EnterpriseClientException {
-    nonEmptyParam(artifactId, "artifactId");
-    nonEmptyParam(className, "className");
-
-    final Team team = defaultTeam(teamId);
-    final Pkg pkg = createAndUploadDefaultPackage(team, groupId, artifactId, file);
-    final Map<UUID, HostByPool> hostsByPool = defaultHostByPool();
-    return createAndStartSimulation(team, pkg, className, hostsByPool, systemProperties);
+    return new SimulationStartResult(simulation, runSummary, true);
   }
 }

@@ -44,7 +44,7 @@ public interface EnterpriseClient {
 
   public List<Pool> getPools() throws EnterpriseClientException;
 
-  List<PackageIndex> getPackages() throws EnterpriseClientException;
+  List<PkgIndex> getPackages() throws EnterpriseClientException;
 
   public Pkg getPackage(UUID pkgId) throws EnterpriseClientException;
 
