@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package io.gatling.plugin.client.exceptions;
+package io.gatling.plugin.exceptions;
 
-public final class UnhandledApiCallException extends EnterpriseClientException {
-  public UnhandledApiCallException(int code, String body) {
-    super(String.format("Unhandled API response (status code: %s, body: %s)", code, body));
+public final class InvalidApiCallException extends EnterprisePluginException {
+  public InvalidApiCallException(String details) {
+    super("Invalid request to the Gatling Enterprise API: " + details);
   }
 }

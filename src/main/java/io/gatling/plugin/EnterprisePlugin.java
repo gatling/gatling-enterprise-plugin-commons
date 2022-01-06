@@ -16,7 +16,7 @@
 
 package io.gatling.plugin;
 
-import io.gatling.plugin.client.exceptions.*;
+import io.gatling.plugin.exceptions.*;
 import io.gatling.plugin.model.SimulationStartResult;
 import java.io.File;
 import java.util.Map;
@@ -25,7 +25,7 @@ import java.util.UUID;
 /**
  * Enterprise plugin features
  *
- * <p>The following exception sub-classes of {@link EnterpriseClientException} can be thrown by all
+ * <p>The following exception sub-classes of {@link EnterprisePluginException} can be thrown by all
  * methods of this client:
  *
  * <ul>
@@ -43,7 +43,7 @@ public interface EnterprisePlugin {
    * @param packageId Required
    * @param file Path to the packaged JAR file to upload and run; required
    */
-  long uploadPackage(UUID packageId, File file) throws EnterpriseClientException;
+  long uploadPackage(UUID packageId, File file) throws EnterprisePluginException;
 
   /**
    * Upload file to the package associated to the given simulationId
@@ -51,7 +51,7 @@ public interface EnterprisePlugin {
    * @param simulationId Required
    * @param file Path to the packaged JAR file to upload and run; required
    */
-  long uploadPackageWithSimulationId(UUID simulationId, File file) throws EnterpriseClientException;
+  long uploadPackageWithSimulationId(UUID simulationId, File file) throws EnterprisePluginException;
 
   /**
    * Upload file to the package configured on the given simulation ID, and start the simulation
@@ -63,7 +63,7 @@ public interface EnterprisePlugin {
    */
   SimulationStartResult uploadPackageAndStartSimulation(
       UUID simulationId, Map<String, String> systemProperties, File file)
-      throws EnterpriseClientException;
+      throws EnterprisePluginException;
 
   /**
    * Create and start a simulation with given parameters
@@ -84,5 +84,5 @@ public interface EnterprisePlugin {
       UUID packageId,
       Map<String, String> systemProperties,
       File file)
-      throws EnterpriseClientException;
+      throws EnterprisePluginException;
 }

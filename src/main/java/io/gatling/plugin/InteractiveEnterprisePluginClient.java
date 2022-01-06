@@ -19,7 +19,7 @@ package io.gatling.plugin;
 import static io.gatling.plugin.util.ObjectsUtil.nonNullParam;
 
 import io.gatling.plugin.client.EnterpriseClient;
-import io.gatling.plugin.client.exceptions.EnterpriseClientException;
+import io.gatling.plugin.exceptions.EnterprisePluginException;
 import io.gatling.plugin.io.PluginIO;
 import io.gatling.plugin.io.PluginLogger;
 import io.gatling.plugin.io.input.InputChoice;
@@ -53,7 +53,7 @@ public final class InteractiveEnterprisePluginClient extends PluginClient
       UUID configuredPackageId,
       Map<String, String> systemProperties,
       File file)
-      throws EnterpriseClientException, EmptyChoicesException {
+      throws EnterprisePluginException, EmptyChoicesException {
     nonNullParam(discoveredSimulationClasses, "discoveredSimulationClasses");
     nonNullParam(systemProperties, "systemProperties");
     nonNullParam(file, "file");
@@ -83,7 +83,7 @@ public final class InteractiveEnterprisePluginClient extends PluginClient
     return inputChoice.inputFromStringList(choices, false).equals(create);
   }
 
-  private void uploadPackage(UUID artifactId, File packageFile) throws EnterpriseClientException {
+  private void uploadPackage(UUID artifactId, File packageFile) throws EnterprisePluginException {
     logger.info("Uploading package...");
     enterpriseClient.uploadPackage(artifactId, packageFile);
     logger.info("Package uploaded");
@@ -91,7 +91,7 @@ public final class InteractiveEnterprisePluginClient extends PluginClient
 
   private SimulationStartResult startSimulation(
       File packageFile, Map<String, String> systemProperties, List<Simulation> simulations)
-      throws EnterpriseClientException, EmptyChoicesException {
+      throws EnterprisePluginException, EmptyChoicesException {
     logger.info("Proceeding to start simulation");
 
     if (simulations.isEmpty()) {
@@ -128,7 +128,7 @@ public final class InteractiveEnterprisePluginClient extends PluginClient
       File packageFile,
       List<Simulation> existingSimulations,
       Map<String, String> systemProperties)
-      throws EnterpriseClientException, EmptyChoicesException {
+      throws EnterprisePluginException, EmptyChoicesException {
     logger.info("Proceeding to the create simulation step");
     String simulationClass =
         chooseSimulationClass(configuredSimulationClass, discoveredSimulationClasses);
@@ -173,7 +173,7 @@ public final class InteractiveEnterprisePluginClient extends PluginClient
 
   /** @param configuredTeamId Optional */
   private Team chooseTeam(UUID configuredTeamId)
-      throws EnterpriseClientException, EmptyChoicesException {
+      throws EnterprisePluginException, EmptyChoicesException {
     final List<Team> teams = enterpriseClient.getTeams();
 
     if (configuredTeamId != null) {
@@ -240,7 +240,7 @@ public final class InteractiveEnterprisePluginClient extends PluginClient
    */
   private Pkg chooseOrCreatePackage(
       UUID teamId, String groupId, String artifactId, UUID configuredPackageId)
-      throws EnterpriseClientException {
+      throws EnterprisePluginException {
     final List<PkgIndex> existingPackages = enterpriseClient.getPackages();
 
     if (configuredPackageId != null) {
@@ -271,7 +271,7 @@ public final class InteractiveEnterprisePluginClient extends PluginClient
     return inputChoice.inputFromStringList(choices, false).equals(create);
   }
 
-  private Pkg choosePackage(List<PkgIndex> existingPackages) throws EnterpriseClientException {
+  private Pkg choosePackage(List<PkgIndex> existingPackages) throws EnterprisePluginException {
     logger.info("Choose a package from the list:");
     final UUID packageId =
         inputChoice.inputFromList(
@@ -282,7 +282,7 @@ public final class InteractiveEnterprisePluginClient extends PluginClient
 
   private Pkg createPackage(
       UUID teamId, String groupId, String artifactId, List<PkgIndex> existingPackages)
-      throws EnterpriseClientException {
+      throws EnterprisePluginException {
     final String defaultPackageName =
         artifactId != null ? (groupId != null ? groupId + ":" + artifactId : artifactId) : null;
     final Set<String> existingPackageNames =
@@ -313,7 +313,7 @@ public final class InteractiveEnterprisePluginClient extends PluginClient
     return enterpriseClient.createPackage(packageName, teamId);
   }
 
-  private Pool choosePool() throws EnterpriseClientException, EmptyChoicesException {
+  private Pool choosePool() throws EnterprisePluginException, EmptyChoicesException {
     final List<Pool> pools = enterpriseClient.getPools();
 
     if (pools.isEmpty()) {

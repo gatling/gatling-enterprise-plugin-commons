@@ -20,7 +20,7 @@ import static io.gatling.plugin.client.json.JsonUtil.JSON_MAPPER;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import io.gatling.plugin.client.exceptions.*;
+import io.gatling.plugin.exceptions.*;
 import io.gatling.plugin.util.LambdaExceptionUtil;
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -52,11 +52,11 @@ abstract class AbstractApiRequests {
 
   <T> T executeRequest(
       Request.Builder unauthenticatedRequest,
-      LambdaExceptionUtil.FunctionWithExceptions<Response, T, EnterpriseClientException>
+      LambdaExceptionUtil.FunctionWithExceptions<Response, T, EnterprisePluginException>
           handleSuccessfulResponse,
-      LambdaExceptionUtil.ConsumerWithExceptions<Response, EnterpriseClientException>
+      LambdaExceptionUtil.ConsumerWithExceptions<Response, EnterprisePluginException>
           validateResponse)
-      throws EnterpriseClientException {
+      throws EnterprisePluginException {
     Request request = unauthenticatedRequest.header(AUTHORIZATION_HEADER, token).build();
     try (Response response = okHttpClient.newCall(request).execute()) {
       validateResponse.accept(response);
@@ -69,13 +69,13 @@ abstract class AbstractApiRequests {
 
   <T> T executeRequest(
       Request.Builder unauthenticatedRequest,
-      LambdaExceptionUtil.FunctionWithExceptions<Response, T, EnterpriseClientException>
+      LambdaExceptionUtil.FunctionWithExceptions<Response, T, EnterprisePluginException>
           handleSuccessfulResponse)
-      throws EnterpriseClientException {
+      throws EnterprisePluginException {
     return executeRequest(unauthenticatedRequest, handleSuccessfulResponse, response -> {});
   }
 
-  void defaultValidateResponse(Response response) throws EnterpriseClientException {
+  void defaultValidateResponse(Response response) throws EnterprisePluginException {
     if (!response.isSuccessful()) {
       switch (response.code()) {
         case HttpURLConnection.HTTP_UNAUTHORIZED:
@@ -90,7 +90,7 @@ abstract class AbstractApiRequests {
     }
   }
 
-  String readResponseBody(Response response) throws EnterpriseClientException {
+  String readResponseBody(Response response) throws EnterprisePluginException {
     try (ResponseBody body = response.body()) {
       return body.string();
     } catch (IOException e) {
@@ -98,7 +98,7 @@ abstract class AbstractApiRequests {
     }
   }
 
-  <T> T readResponseJson(Response response, Class<T> valueType) throws EnterpriseClientException {
+  <T> T readResponseJson(Response response, Class<T> valueType) throws EnterprisePluginException {
     try {
       return JSON_MAPPER.readValue(readResponseBody(response), valueType);
     } catch (JsonProcessingException e) {
@@ -107,7 +107,7 @@ abstract class AbstractApiRequests {
   }
 
   <T> T readResponseJson(Response response, TypeReference<T> valueTypeRef)
-      throws EnterpriseClientException {
+      throws EnterprisePluginException {
     try {
       return JSON_MAPPER.readValue(readResponseBody(response), valueTypeRef);
     } catch (JsonProcessingException e) {

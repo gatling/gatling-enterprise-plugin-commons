@@ -16,9 +16,9 @@
 
 package io.gatling.plugin.client.http;
 
-import io.gatling.plugin.client.exceptions.EnterpriseClientException;
-import io.gatling.plugin.client.exceptions.InvalidApiCallException;
-import io.gatling.plugin.client.exceptions.PackageNotFoundException;
+import io.gatling.plugin.exceptions.EnterprisePluginException;
+import io.gatling.plugin.exceptions.InvalidApiCallException;
+import io.gatling.plugin.exceptions.PackageNotFoundException;
 import io.gatling.plugin.model.*;
 import java.io.File;
 import java.net.HttpURLConnection;
@@ -34,13 +34,13 @@ class PackagesApiRequests extends AbstractApiRequests {
     super(okHttpClient, url, token);
   }
 
-  Packages listPackages() throws EnterpriseClientException {
+  Packages listPackages() throws EnterprisePluginException {
     HttpUrl requestUrl = url.newBuilder().addPathSegment("artifacts").build();
     Request.Builder request = new Request.Builder().url(requestUrl).get();
     return executeRequest(request, response -> readResponseJson(response, Packages.class));
   }
 
-  Pkg readPackage(UUID packageId) throws EnterpriseClientException {
+  Pkg readPackage(UUID packageId) throws EnterprisePluginException {
     HttpUrl requestUrl =
         url.newBuilder().addPathSegment("artifacts").addPathSegment(packageId.toString()).build();
     Request.Builder request = new Request.Builder().url(requestUrl).get();
@@ -54,14 +54,14 @@ class PackagesApiRequests extends AbstractApiRequests {
         });
   }
 
-  Pkg createPackage(PackageCreationPayload pkg) throws EnterpriseClientException {
+  Pkg createPackage(PackageCreationPayload pkg) throws EnterprisePluginException {
     HttpUrl requestUrl = url.newBuilder().addPathSegment("artifacts").build();
     RequestBody body = jsonRequestBody(pkg);
     Request.Builder request = new Request.Builder().url(requestUrl).post(body);
     return executeRequest(request, response -> readResponseJson(response, Pkg.class));
   }
 
-  long uploadPackage(UUID packageId, File file) throws EnterpriseClientException {
+  long uploadPackage(UUID packageId, File file) throws EnterprisePluginException {
     Request.Builder request = uploadPackageRequest(packageId, file);
     return executeRequest(
         request,

@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package io.gatling.plugin.client.exceptions;
+package io.gatling.plugin.exceptions;
 
-public final class JsonRequestProcessingException extends RuntimeException {
+import java.util.UUID;
 
-  public JsonRequestProcessingException(Throwable cause) {
-    super("Unable to serialize JSON request to the Gatling Enterprise API", cause);
+public final class TeamNotFoundException extends EnterprisePluginException {
+  public TeamNotFoundException(UUID teamId) {
+    super("Team with id " + teamId + " not found");
   }
 }

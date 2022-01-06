@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package io.gatling.plugin.client.exceptions;
+package io.gatling.plugin.exceptions;
 
 import java.util.UUID;
 
-public final class PackageNotFoundException extends EnterpriseClientException {
+public final class PackageNotFoundException extends EnterprisePluginException {
   public PackageNotFoundException(UUID packageId) {
     super("Package with id " + packageId + " not found");
   }

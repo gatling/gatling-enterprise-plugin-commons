@@ -17,8 +17,8 @@
 package io.gatling.plugin.client.http;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import io.gatling.plugin.client.exceptions.EnterpriseClientException;
-import io.gatling.plugin.client.exceptions.SimulationNotFoundException;
+import io.gatling.plugin.exceptions.EnterprisePluginException;
+import io.gatling.plugin.exceptions.SimulationNotFoundException;
 import io.gatling.plugin.model.RunSummary;
 import io.gatling.plugin.model.Simulation;
 import io.gatling.plugin.model.SimulationCreationPayload;
@@ -37,7 +37,7 @@ class SimulationsApiRequests extends AbstractApiRequests {
     super(okHttpClient, url, token);
   }
 
-  Simulation getSimulation(UUID simulationId) throws EnterpriseClientException {
+  Simulation getSimulation(UUID simulationId) throws EnterprisePluginException {
     HttpUrl requestUrl =
         url.newBuilder()
             .addPathSegment("simulations")
@@ -54,7 +54,7 @@ class SimulationsApiRequests extends AbstractApiRequests {
         });
   }
 
-  Simulations listSimulations() throws EnterpriseClientException {
+  Simulations listSimulations() throws EnterprisePluginException {
     HttpUrl requestUrl = url.newBuilder().addPathSegment("simulations").build();
     Request.Builder request = new Request.Builder().url(requestUrl).get();
     return executeRequest(
@@ -67,7 +67,7 @@ class SimulationsApiRequests extends AbstractApiRequests {
   }
 
   Simulation createSimulation(SimulationCreationPayload simulation)
-      throws EnterpriseClientException {
+      throws EnterprisePluginException {
     HttpUrl requestUrl = url.newBuilder().addPathSegment("simulations").build();
     RequestBody body = jsonRequestBody(simulation);
     Request.Builder request = new Request.Builder().url(requestUrl).post(body);
@@ -75,7 +75,7 @@ class SimulationsApiRequests extends AbstractApiRequests {
   }
 
   RunSummary startSimulation(UUID simulationId, List<SystemProperty> systemProperties)
-      throws EnterpriseClientException {
+      throws EnterprisePluginException {
     HttpUrl requestUrl =
         url.newBuilder()
             .addPathSegments("simulations/start")

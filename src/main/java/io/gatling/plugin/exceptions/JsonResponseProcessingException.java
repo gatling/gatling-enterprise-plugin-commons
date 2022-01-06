@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-package io.gatling.plugin.client.exceptions;
+package io.gatling.plugin.exceptions;
 
-import java.util.UUID;
+public final class JsonResponseProcessingException extends RuntimeException {
 
-public final class TeamNotFoundException extends EnterpriseClientException {
-  public TeamNotFoundException(UUID teamId) {
-    super("Team with id " + teamId + " not found");
+  public JsonResponseProcessingException(Throwable cause) {
+    super("Unable to parse JSON response from the Gatling Enterprise API", cause);
   }
 }

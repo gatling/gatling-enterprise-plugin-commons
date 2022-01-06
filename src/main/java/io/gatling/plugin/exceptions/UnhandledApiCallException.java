@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-package io.gatling.plugin.client.exceptions;
+package io.gatling.plugin.exceptions;
 
-public final class ForbiddenApiCallException extends EnterpriseClientException {
-  public ForbiddenApiCallException() {
-    super(
-        "API token valid but lacks required privileges: please configure a token with the role 'Configure' (see https://gatling.io/docs/enterprise/cloud/reference/admin/api_tokens/)");
+public final class UnhandledApiCallException extends EnterprisePluginException {
+  public UnhandledApiCallException(int code, String body) {
+    super(String.format("Unhandled API response (status code: %s, body: %s)", code, body));
   }
 }

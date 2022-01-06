@@ -14,15 +14,21 @@
  * limitations under the License.
  */
 
-package io.gatling.plugin.client.exceptions;
+package io.gatling.plugin.exceptions;
 
-public final class UnsupportedClientException extends EnterpriseClientException {
-  public UnsupportedClientException(String client, String version) {
-    super(
-        "Client "
-            + client
-            + " version "
-            + version
-            + " is no longer supported; please upgrade to the latest version");
+import io.gatling.plugin.model.Team;
+import java.util.List;
+
+public final class SeveralTeamsFoundException extends EnterprisePluginException {
+
+  private final List<Team> availableTeams;
+
+  public SeveralTeamsFoundException(List<Team> availableTeams, String message) {
+    super(message);
+    this.availableTeams = availableTeams;
+  }
+
+  public List<Team> getAvailableTeams() {
+    return availableTeams;
   }
 }

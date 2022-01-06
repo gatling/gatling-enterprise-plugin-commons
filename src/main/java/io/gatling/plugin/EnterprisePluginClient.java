@@ -20,7 +20,7 @@ import static io.gatling.plugin.util.ObjectsUtil.nonEmptyParam;
 import static io.gatling.plugin.util.ObjectsUtil.nonNullParam;
 
 import io.gatling.plugin.client.EnterpriseClient;
-import io.gatling.plugin.client.exceptions.*;
+import io.gatling.plugin.exceptions.*;
 import io.gatling.plugin.model.*;
 import io.gatling.plugin.model.Pkg;
 import java.io.File;
@@ -33,7 +33,7 @@ public final class EnterprisePluginClient extends PluginClient implements Enterp
   }
 
   @Override
-  public long uploadPackage(UUID packageId, File file) throws EnterpriseClientException {
+  public long uploadPackage(UUID packageId, File file) throws EnterprisePluginException {
     nonNullParam(packageId, "packageId");
     nonNullParam(file, "file");
     return enterpriseClient.uploadPackageWithChecksum(packageId, file);
@@ -41,7 +41,7 @@ public final class EnterprisePluginClient extends PluginClient implements Enterp
 
   @Override
   public long uploadPackageWithSimulationId(UUID simulationId, File file)
-      throws EnterpriseClientException {
+      throws EnterprisePluginException {
     nonNullParam(file, "simulationId");
     nonNullParam(file, "file");
     Simulation simulation = enterpriseClient.getSimulation(simulationId);
@@ -51,7 +51,7 @@ public final class EnterprisePluginClient extends PluginClient implements Enterp
   @Override
   public SimulationStartResult uploadPackageAndStartSimulation(
       UUID simulationId, Map<String, String> systemProperties, File file)
-      throws EnterpriseClientException {
+      throws EnterprisePluginException {
     nonNullParam(simulationId, "simulationId");
     nonNullParam(systemProperties, "systemProperties");
     nonNullParam(file, "file");
@@ -71,7 +71,7 @@ public final class EnterprisePluginClient extends PluginClient implements Enterp
       UUID packageId,
       Map<String, String> systemProperties,
       File file)
-      throws EnterpriseClientException {
+      throws EnterprisePluginException {
     nonEmptyParam(artifactId, "artifactId");
     nonEmptyParam(simulationClass, "className");
 
@@ -84,7 +84,7 @@ public final class EnterprisePluginClient extends PluginClient implements Enterp
     return createAndStartSimulation(team, pkg, simulationClass, hostsByPool, systemProperties);
   }
 
-  private Team defaultTeam(UUID teamId) throws EnterpriseClientException {
+  private Team defaultTeam(UUID teamId) throws EnterprisePluginException {
     final List<Team> teams = enterpriseClient.getTeams();
     if (teams.isEmpty()) {
       throw new IllegalStateException(
@@ -106,14 +106,14 @@ public final class EnterprisePluginClient extends PluginClient implements Enterp
   }
 
   private Pkg createAndUploadDefaultPackage(Team team, String groupId, String artifactId, File file)
-      throws EnterpriseClientException {
+      throws EnterprisePluginException {
     final String packageName = groupId != null ? groupId + ":" + artifactId : artifactId;
     final Pkg pkg = enterpriseClient.createPackage(packageName, team.id);
     enterpriseClient.uploadPackage(pkg.id, file);
     return pkg;
   }
 
-  private Map<UUID, HostByPool> defaultHostByPool() throws EnterpriseClientException {
+  private Map<UUID, HostByPool> defaultHostByPool() throws EnterprisePluginException {
     final List<Pool> pools = enterpriseClient.getPools();
     if (pools.isEmpty()) {
       // Should never happen on Gatling Enterprise Cloud
@@ -130,7 +130,7 @@ public final class EnterprisePluginClient extends PluginClient implements Enterp
       String className,
       Map<UUID, HostByPool> hostsByPool,
       Map<String, String> systemProperties)
-      throws EnterpriseClientException {
+      throws EnterprisePluginException {
     final String[] classNameParts = className.split("\\.");
     final String simulationName = classNameParts[classNameParts.length - 1];
 

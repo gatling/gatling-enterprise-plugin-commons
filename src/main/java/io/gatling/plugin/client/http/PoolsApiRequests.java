@@ -16,7 +16,7 @@
 
 package io.gatling.plugin.client.http;
 
-import io.gatling.plugin.client.exceptions.EnterpriseClientException;
+import io.gatling.plugin.exceptions.EnterprisePluginException;
 import io.gatling.plugin.model.Pools;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
@@ -27,7 +27,7 @@ class PoolsApiRequests extends AbstractApiRequests {
     super(okHttpClient, url, token);
   }
 
-  Pools listPools() throws EnterpriseClientException {
+  Pools listPools() throws EnterprisePluginException {
     HttpUrl requestUrl = url.newBuilder().addPathSegment("pools").build();
     Request.Builder request = new Request.Builder().url(requestUrl).get();
     return executeRequest(request, response -> readResponseJson(response, Pools.class));

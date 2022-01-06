@@ -16,7 +16,7 @@
 
 package io.gatling.plugin;
 
-import io.gatling.plugin.client.exceptions.*;
+import io.gatling.plugin.exceptions.*;
 import io.gatling.plugin.model.SimulationStartResult;
 import java.io.File;
 import java.util.List;
@@ -30,7 +30,7 @@ import java.util.UUID;
  * <p>All methods can throw an {@link EmptyChoicesException} if the API returns an empty set of
  * available choices.
  *
- * <p>The following exception sub-classes of {@link EnterpriseClientException} can be thrown by all
+ * <p>The following exception sub-classes of {@link EnterprisePluginException} can be thrown by all
  * methods of this client:
  *
  * <ul>
@@ -66,5 +66,5 @@ public interface InteractiveEnterprisePlugin {
       UUID packageId,
       Map<String, String> systemProperties,
       File file)
-      throws EnterpriseClientException, EmptyChoicesException;
+      throws EnterprisePluginException, EmptyChoicesException;
 }

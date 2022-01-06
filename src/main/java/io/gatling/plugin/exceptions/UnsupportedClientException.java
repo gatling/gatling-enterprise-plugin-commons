@@ -14,11 +14,15 @@
  * limitations under the License.
  */
 
-package io.gatling.plugin.client.exceptions;
+package io.gatling.plugin.exceptions;
 
-public final class JsonResponseProcessingException extends RuntimeException {
-
-  public JsonResponseProcessingException(Throwable cause) {
-    super("Unable to parse JSON response from the Gatling Enterprise API", cause);
+public final class UnsupportedClientException extends EnterprisePluginException {
+  public UnsupportedClientException(String client, String version) {
+    super(
+        "Client "
+            + client
+            + " version "
+            + version
+            + " is no longer supported; please upgrade to the latest version");
   }
 }

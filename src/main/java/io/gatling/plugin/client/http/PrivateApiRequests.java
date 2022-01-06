@@ -16,8 +16,8 @@
 
 package io.gatling.plugin.client.http;
 
-import io.gatling.plugin.client.exceptions.EnterpriseClientException;
-import io.gatling.plugin.client.exceptions.UnsupportedClientException;
+import io.gatling.plugin.exceptions.EnterprisePluginException;
+import io.gatling.plugin.exceptions.UnsupportedClientException;
 import java.net.HttpURLConnection;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
@@ -30,7 +30,7 @@ class PrivateApiRequests extends AbstractApiRequests {
   }
 
   /** @throws UnsupportedClientException if this client version is outdated */
-  void checkVersionSupport(String client, String version) throws EnterpriseClientException {
+  void checkVersionSupport(String client, String version) throws EnterprisePluginException {
     Request.Builder request = checkVersionSupportRequest(client, version);
     executeRequest(
         request,
