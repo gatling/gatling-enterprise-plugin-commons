@@ -22,7 +22,6 @@ import io.gatling.plugin.client.EnterpriseClient;
 import io.gatling.plugin.exceptions.EnterprisePluginException;
 import io.gatling.plugin.exceptions.SimulationStartException;
 import io.gatling.plugin.io.PluginIO;
-import io.gatling.plugin.io.PluginLogger;
 import io.gatling.plugin.io.input.InputChoice;
 import io.gatling.plugin.model.*;
 import io.gatling.plugin.util.LambdaExceptionUtil.ConsumerWithExceptions;
@@ -35,14 +34,12 @@ public final class InteractiveEnterprisePluginClient extends PluginClient
     implements InteractiveEnterprisePlugin {
 
   private final InputChoice inputChoice;
-  private final PluginLogger logger;
 
   private static final int DEFAULT_HOST_WEIGHT = 100;
 
   public InteractiveEnterprisePluginClient(EnterpriseClient enterpriseClient, PluginIO pluginIO) {
-    super(enterpriseClient);
+    super(enterpriseClient, pluginIO.getLogger());
     this.inputChoice = new InputChoice(pluginIO);
-    this.logger = pluginIO.getLogger();
   }
 
   public SimulationStartResult createOrStartSimulation(
@@ -84,15 +81,6 @@ public final class InteractiveEnterprisePluginClient extends PluginClient
     return inputChoice.inputFromStringList(choices, false).equals(create);
   }
 
-  private void uploadPackage(UUID artifactId, File packageFile) throws EnterprisePluginException {
-    logger.info("Uploading package...");
-    if (enterpriseClient.uploadPackageWithChecksum(artifactId, packageFile) == -1) {
-      logger.info("No code changes detected, skipping package upload");
-    } else {
-      logger.info("Package uploaded");
-    }
-  }
-
   private SimulationStartResult startSimulation(
       File packageFile, Map<String, String> systemProperties, List<Simulation> simulations)
       throws EnterprisePluginException, EmptyChoicesException {
@@ -104,7 +92,7 @@ public final class InteractiveEnterprisePluginClient extends PluginClient
     final Simulation simulation =
         inputChoice.inputFromList(simulations, Show::simulation, Comparator.comparing(s -> s.name));
 
-    uploadPackage(simulation.pkgId, packageFile);
+    uploadPackageWithChecksum(simulation.pkgId, packageFile);
 
     final RunSummary runSummary = enterpriseClient.startSimulation(simulation.id, systemProperties);
 
@@ -142,7 +130,7 @@ public final class InteractiveEnterprisePluginClient extends PluginClient
     Pool pool = choosePool();
     int size = chooseSize();
 
-    uploadPackage(pkg.id, packageFile);
+    uploadPackageWithChecksum(pkg.id, packageFile);
 
     // TODO: custom pools from configuration, MISC-313
     Map<UUID, HostByPool> hostsByPool =

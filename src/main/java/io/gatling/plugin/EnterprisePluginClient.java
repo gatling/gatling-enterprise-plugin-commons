@@ -21,6 +21,7 @@ import static io.gatling.plugin.util.ObjectsUtil.nonNullParam;
 
 import io.gatling.plugin.client.EnterpriseClient;
 import io.gatling.plugin.exceptions.*;
+import io.gatling.plugin.io.PluginLogger;
 import io.gatling.plugin.model.*;
 import io.gatling.plugin.model.Pkg;
 import java.io.File;
@@ -28,15 +29,15 @@ import java.util.*;
 
 public final class EnterprisePluginClient extends PluginClient implements EnterprisePlugin {
 
-  public EnterprisePluginClient(EnterpriseClient enterpriseClient) {
-    super(enterpriseClient);
+  public EnterprisePluginClient(EnterpriseClient enterpriseClient, PluginLogger logger) {
+    super(enterpriseClient, logger);
   }
 
   @Override
   public long uploadPackage(UUID packageId, File file) throws EnterprisePluginException {
     nonNullParam(packageId, "packageId");
     nonNullParam(file, "file");
-    return enterpriseClient.uploadPackageWithChecksum(packageId, file);
+    return uploadPackageWithChecksum(packageId, file);
   }
 
   @Override
