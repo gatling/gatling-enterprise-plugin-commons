@@ -19,6 +19,6 @@ package io.gatling.plugin.exceptions;
 public final class UnauthorizedApiCallException extends EnterprisePluginException {
   public UnauthorizedApiCallException() {
     super(
-        "API token not recognized: please configure a valid token (with the role 'All'; see https://gatling.io/docs/enterprise/cloud/reference/admin/api_tokens/)");
+        "API token not recognized: please configure a valid token (with the role 'Configure'; see https://gatling.io/docs/enterprise/cloud/reference/admin/api_tokens/)");
   }
 }
