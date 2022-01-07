@@ -86,8 +86,11 @@ public final class InteractiveEnterprisePluginClient extends PluginClient
 
   private void uploadPackage(UUID artifactId, File packageFile) throws EnterprisePluginException {
     logger.info("Uploading package...");
-    enterpriseClient.uploadPackage(artifactId, packageFile);
-    logger.info("Package uploaded");
+    if (enterpriseClient.uploadPackageWithChecksum(artifactId, packageFile) == -1) {
+      logger.info("No code changes detected, skipping package upload");
+    } else {
+      logger.info("Package uploaded");
+    }
   }
 
   private SimulationStartResult startSimulation(

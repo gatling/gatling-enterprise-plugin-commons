@@ -63,6 +63,11 @@ public interface EnterpriseClient {
   RunSummary startSimulation(UUID simulationId, Map<String, String> systemProperties)
       throws EnterprisePluginException;
 
+  /**
+   * @param packageId Required
+   * @param file Required
+   * @return file size if uploaded, -1 when checksum are equals
+   */
   long uploadPackageWithChecksum(UUID packageId, File file) throws EnterprisePluginException;
 
   Simulation createSimulation(
