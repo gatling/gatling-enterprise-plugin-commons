@@ -38,6 +38,7 @@ import java.util.UUID;
  *   <li>{@link ForbiddenApiCallException}: authentication token with insufficient privileges
  *   <li>{@link ApiCallIOException}: unexpected IO error
  *   <li>{@link InvalidApiCallException}: invalid input data
+ *   <li>{@link UserQuitException}: execution cancelled by the user
  * </ul>
  */
 public interface InteractiveEnterprisePlugin {
