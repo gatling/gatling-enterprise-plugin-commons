@@ -16,6 +16,7 @@
 
 package io.gatling.plugin.io.input;
 
+import io.gatling.plugin.exceptions.UserQuitException;
 import io.gatling.plugin.io.PluginIO;
 import io.gatling.plugin.io.PluginLogger;
 import io.gatling.plugin.io.PluginScanner;
@@ -97,35 +98,33 @@ public final class InputChoice {
    * @param choices possible result, should never be empty
    * @param show used to display a choice
    * @param orderBy optional, a comparator used for sorting the list of choices
+   * @throws UserQuitException if the user chooses to cancel the operation
    */
-  public <T> T inputFromList(List<T> choices, Function<T, String> show, Comparator<T> orderBy) {
+  public <T> T inputFromList(List<T> choices, Function<T, String> show, Comparator<T> orderBy)
+      throws UserQuitException {
+    if (choices.isEmpty()) {
+      throw new IllegalArgumentException("Choices list is empty");
+    }
     final List<T> sortedChoices =
         orderBy != null ? choices.stream().sorted(orderBy).collect(Collectors.toList()) : choices;
-    return sortedChoices.get(indexFromList(sortedChoices, show));
-  }
-
-  public String inputFromStringList(List<String> choices, boolean sorted) {
-    final Comparator<String> comparator = sorted ? Comparator.comparing(Function.identity()) : null;
-    return inputFromList(choices, Function.identity(), comparator);
-  }
-
-  /**
-   * Display choices and allow an optional custom entry
-   *
-   * @param entries user choices, should never be empty
-   * @param show used to display a choice
-   * @return chosen index
-   */
-  private <T> int indexFromList(List<T> entries, Function<T, String> show) {
-    if (entries.isEmpty()) {
-      throw new IllegalArgumentException("Choices set is empty");
-    }
 
     logger.info("Type the number corresponding to your choice and press enter");
-    int entriesSize = entries.size();
-    IntStream.range(0, entriesSize)
+    logger.info("[0] <Quit>");
+    final int entriesSize = choices.size();
+    IntStream.range(1, entriesSize + 1)
         .forEach(
-            index -> logger.info(String.format("[%d] %s", index, show.apply(entries.get(index)))));
-    return inputInt(0, entriesSize);
+            index ->
+                logger.info(String.format("[%d] %s", index, show.apply(choices.get(index - 1)))));
+    final int input = inputInt(0, entriesSize + 1);
+
+    if (input == 0) {
+      throw new UserQuitException();
+    }
+    return sortedChoices.get(input - 1);
+  }
+
+  public String inputFromStringList(List<String> choices, boolean sorted) throws UserQuitException {
+    final Comparator<String> comparator = sorted ? Comparator.comparing(Function.identity()) : null;
+    return inputFromList(choices, Function.identity(), comparator);
   }
 }

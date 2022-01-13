@@ -21,6 +21,7 @@ import static io.gatling.plugin.util.ObjectsUtil.nonNullParam;
 import io.gatling.plugin.client.EnterpriseClient;
 import io.gatling.plugin.exceptions.EnterprisePluginException;
 import io.gatling.plugin.exceptions.SimulationStartException;
+import io.gatling.plugin.exceptions.UserQuitException;
 import io.gatling.plugin.io.PluginIO;
 import io.gatling.plugin.io.input.InputChoice;
 import io.gatling.plugin.model.*;
@@ -73,7 +74,7 @@ public final class InteractiveEnterprisePluginClient extends PluginClient
         : startSimulation(file, systemProperties, simulations);
   }
 
-  private boolean chooseIfCreateSimulation() {
+  private boolean chooseIfCreateSimulation() throws UserQuitException {
     logger.info("Do you want to create a new simulation or start an existing one?");
     final String create = "Create a new Simulation on Gatling Enterprise, then start it";
     final String start = "Start an existing Simulation on Gatling Enterprise";
@@ -148,7 +149,8 @@ public final class InteractiveEnterprisePluginClient extends PluginClient
   }
 
   private String chooseSimulationClass(
-      String configuredSimulationClass, List<String> discoveredSimulationClasses) {
+      String configuredSimulationClass, List<String> discoveredSimulationClasses)
+      throws UserQuitException {
     if (configuredSimulationClass != null && !configuredSimulationClass.isEmpty()) {
       // Always accept explicit simulationClass configuration
       logger.info("Picking the configured simulation class: " + configuredSimulationClass);
@@ -258,7 +260,7 @@ public final class InteractiveEnterprisePluginClient extends PluginClient
         : choosePackage(existingPackages);
   }
 
-  private boolean chooseIfCreatePackage() {
+  private boolean chooseIfCreatePackage() throws UserQuitException {
     logger.info("Do you want to create a new package or upload your project to an existing one?");
     final String create = "Create a new package on Gatling Enterprise";
     final String start = "Choose an existing package on Gatling Enterprise";
