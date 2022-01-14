@@ -58,7 +58,7 @@ public final class EnterprisePluginClient extends PluginClient implements Enterp
     nonNullParam(file, "file");
 
     final Simulation simulation = enterpriseClient.getSimulation(simulationId);
-    enterpriseClient.uploadPackageWithChecksum(simulation.pkgId, file);
+    uploadPackageWithChecksum(simulation.pkgId, file);
     final RunSummary runSummary = enterpriseClient.startSimulation(simulationId, systemProperties);
     return new SimulationStartResult(simulation, runSummary, false);
   }
