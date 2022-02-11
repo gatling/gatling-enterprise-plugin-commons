@@ -1,4 +1,4 @@
-import net.moznion.sbt.spotless.config.{GoogleJavaFormatConfig, JavaConfig, SpotlessConfig}
+import net.moznion.sbt.spotless.config.{ GoogleJavaFormatConfig, JavaConfig, SpotlessConfig }
 
 ThisBuild / sonatypeCredentialHost := "s01.oss.sonatype.org"
 
@@ -26,7 +26,9 @@ lazy val root = (project in file("."))
       "net.aichler"                % "jupiter-interface"    % JupiterKeys.jupiterVersion.value % Test,
       "com.squareup.okhttp3"       % "mockwebserver"        % okHttp3Version                   % Test,
       "com.squareup.okhttp3"       % "okhttp"               % okHttp3Version,
-      "com.fasterxml.jackson.core" % "jackson-databind"     % "2.13.1"
+      "com.fasterxml.jackson.core" % "jackson-databind"     % "2.13.1",
+      "org.apache.commons"         % "commons-exec"         % "1.3",
+      "org.codehaus.plexus"        % "plexus-utils"         % "3.4.1"
     ),
     spotlessJava := JavaConfig(
       googleJavaFormat = GoogleJavaFormatConfig()
