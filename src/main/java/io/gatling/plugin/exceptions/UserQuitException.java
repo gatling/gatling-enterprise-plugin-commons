@@ -18,6 +18,6 @@ package io.gatling.plugin.exceptions;
 
 public class UserQuitException extends EnterprisePluginException {
   public UserQuitException() {
-    super("Execution quit by user");
+    super("Execution cancelled by user");
   }
 }
