@@ -25,7 +25,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 public final class InputChoice {
 
@@ -95,36 +94,53 @@ public final class InputChoice {
   /**
    * User must choose an input from the list
    *
-   * @param choices possible result, should never be empty
+   * @param choices possible results, must not be empty
    * @param show used to display a choice
-   * @param orderBy optional, a comparator used for sorting the list of choices
+   * @throws UserQuitException if the user chooses to cancel the operation
+   */
+  public <T> T inputFromList(List<T> choices, Function<T, String> show) throws UserQuitException {
+    if (choices.isEmpty()) {
+      throw new IllegalArgumentException("Choices list is empty");
+    }
+    final int entriesSize = choices.size();
+
+    logger.info("Type the number corresponding to your choice and press enter");
+    logger.info("[0] <Quit>");
+    for (int i = 1; i <= entriesSize; i++) {
+      logger.info(String.format("[%d] %s", i, show.apply(choices.get(i - 1))));
+    }
+
+    final int input = inputInt(0, entriesSize + 1);
+    if (input == 0) {
+      throw new UserQuitException();
+    }
+    return choices.get(input - 1);
+  }
+
+  /**
+   * User must choose an input from the list
+   *
+   * @param choices possible results, must not be empty
+   * @param show used to display a choice
+   * @param orderBy a comparator used for sorting the list of choices
    * @throws UserQuitException if the user chooses to cancel the operation
    */
   public <T> T inputFromList(List<T> choices, Function<T, String> show, Comparator<T> orderBy)
       throws UserQuitException {
-    if (choices.isEmpty()) {
-      throw new IllegalArgumentException("Choices list is empty");
-    }
-    final List<T> sortedChoices =
-        orderBy != null ? choices.stream().sorted(orderBy).collect(Collectors.toList()) : choices;
-
-    logger.info("Type the number corresponding to your choice and press enter");
-    logger.info("[0] <Quit>");
-    final int entriesSize = choices.size();
-    IntStream.range(1, entriesSize + 1)
-        .forEach(
-            index ->
-                logger.info(String.format("[%d] %s", index, show.apply(choices.get(index - 1)))));
-    final int input = inputInt(0, entriesSize + 1);
-
-    if (input == 0) {
-      throw new UserQuitException();
-    }
-    return sortedChoices.get(input - 1);
+    final List<T> sortedChoices = choices.stream().sorted(orderBy).collect(Collectors.toList());
+    return inputFromList(sortedChoices, show);
   }
 
+  /**
+   * User must choose an input from the list
+   *
+   * @param choices possible results, must not be empty
+   * @param sorted whether or not the list should be sorted
+   * @throws UserQuitException if the user chooses to cancel the operation
+   */
   public String inputFromStringList(List<String> choices, boolean sorted) throws UserQuitException {
-    final Comparator<String> comparator = sorted ? Comparator.comparing(Function.identity()) : null;
-    return inputFromList(choices, Function.identity(), comparator);
+    final List<String> sortedChoices =
+        sorted ? choices.stream().sorted().collect(Collectors.toList()) : choices;
+    return inputFromList(sortedChoices, Function.identity());
   }
 }
