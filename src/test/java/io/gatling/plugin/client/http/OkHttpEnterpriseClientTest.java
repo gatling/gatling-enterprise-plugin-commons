@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-package io.gatling.plugin.util;
+package io.gatling.plugin.client.http;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import io.gatling.plugin.client.http.OkHttpEnterpriseClient;
 import io.gatling.plugin.exceptions.*;
 import java.io.File;
 import java.net.HttpURLConnection;
