@@ -41,7 +41,7 @@ import java.util.UUID;
  *   <li>{@link UserQuitException}: execution cancelled by the user
  * </ul>
  */
-public interface InteractiveEnterprisePlugin {
+public interface InteractiveEnterprisePlugin extends AutoCloseable {
 
   /**
    * Create and start a simulation with given parameters

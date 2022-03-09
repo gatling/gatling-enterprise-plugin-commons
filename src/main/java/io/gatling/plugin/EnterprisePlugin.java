@@ -35,7 +35,7 @@ import java.util.UUID;
  *   <li>{@link InvalidApiCallException}: invalid input data
  * </ul>
  */
-public interface EnterprisePlugin {
+public interface EnterprisePlugin extends AutoCloseable {
 
   /**
    * Upload file to the package associated with given packageId

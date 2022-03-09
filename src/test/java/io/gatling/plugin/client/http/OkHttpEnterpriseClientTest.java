@@ -23,16 +23,13 @@ import java.io.File;
 import java.net.HttpURLConnection;
 import java.util.Arrays;
 import java.util.UUID;
-import okhttp3.OkHttpClient;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.Test;
 
 public class OkHttpEnterpriseClientTest {
 
-  private final String TOKEN = "invalid";
-  private final OkHttpClient OK_HTTP_CLIENT = new OkHttpClient();
-  private final UUID ARTIFACT_ID = UUID.randomUUID();
+  private static final UUID ARTIFACT_ID = UUID.randomUUID();
 
   private final File ARTIFACT_FILE =
       new File(getClass().getResource("/artifacts/maven-sample.jar").getPath());
@@ -50,8 +47,7 @@ public class OkHttpEnterpriseClientTest {
   private OkHttpEnterpriseClient okHttpEnterpriseClientMockWebServer(MockWebServer server) {
     try {
       OkHttpEnterpriseClient client =
-          OkHttpEnterpriseClient.getInstance(
-              OK_HTTP_CLIENT, server.url("/").url(), TOKEN, "client", "version");
+          new OkHttpEnterpriseClient(server.url("/").url(), "invalid", "client", "version");
       server.takeRequest(); // Remove checkVersion enqueue request
       return client;
     } catch (EnterprisePluginException | InterruptedException e) {
@@ -65,9 +61,10 @@ public class OkHttpEnterpriseClientTest {
       throws EnterprisePluginException, InterruptedException {
     MockWebServer server =
         mockWebServer(new MockResponse().setResponseCode(HttpURLConnection.HTTP_OK));
-    OkHttpEnterpriseClient client = okHttpEnterpriseClientMockWebServer(server);
-    client.uploadPackage(ARTIFACT_ID, ARTIFACT_FILE);
-    assertEquals("application/octet-stream", server.takeRequest().getHeader("Content-Type"));
+    try (OkHttpEnterpriseClient client = okHttpEnterpriseClientMockWebServer(server)) {
+      client.uploadPackage(ARTIFACT_ID, ARTIFACT_FILE);
+      assertEquals("application/octet-stream", server.takeRequest().getHeader("Content-Type"));
+    }
   }
 
   @Test
@@ -75,17 +72,19 @@ public class OkHttpEnterpriseClientTest {
       throws EnterprisePluginException, InterruptedException {
     MockWebServer server =
         mockWebServer(new MockResponse().setResponseCode(HttpURLConnection.HTTP_OK));
-    OkHttpEnterpriseClient client = okHttpEnterpriseClientMockWebServer(server);
-    client.uploadPackage(ARTIFACT_ID, ARTIFACT_FILE);
-    assertEquals(
-        ARTIFACT_FILE.length(), Long.valueOf(server.takeRequest().getHeader("Content-Length")));
+    try (OkHttpEnterpriseClient client = okHttpEnterpriseClientMockWebServer(server)) {
+      client.uploadPackage(ARTIFACT_ID, ARTIFACT_FILE);
+      assertEquals(
+          ARTIFACT_FILE.length(), Long.valueOf(server.takeRequest().getHeader("Content-Length")));
+    }
   }
 
   private EnterprisePluginException UploadPackage_Status_EnterpriseClientException(int code) {
     MockWebServer server = mockWebServer(new MockResponse().setResponseCode(code));
-    OkHttpEnterpriseClient client = okHttpEnterpriseClientMockWebServer(server);
-    return assertThrows(
-        EnterprisePluginException.class, () -> client.uploadPackage(ARTIFACT_ID, ARTIFACT_FILE));
+    try (OkHttpEnterpriseClient client = okHttpEnterpriseClientMockWebServer(server)) {
+      return assertThrows(
+          EnterprisePluginException.class, () -> client.uploadPackage(ARTIFACT_ID, ARTIFACT_FILE));
+    }
   }
 
   @Test

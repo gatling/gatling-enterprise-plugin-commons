@@ -34,37 +34,33 @@ public final class OkHttpEnterpriseClient implements EnterpriseClient {
   private static final Map<String, String> DEFAULT_SYSTEM_PROPERTIES = Collections.emptyMap();
   private static final MeaningfulTimeWindow DEFAULT_TIME_WINDOW = new MeaningfulTimeWindow(0, 0);
 
+  private final OkHttpClient okHttpClient;
   private final PrivateApiRequests privateApiRequests;
   private final PackagesApiRequests packagesApiRequests;
   private final PoolsApiRequests poolsApiRequests;
   private final SimulationsApiRequests simulationsApiRequests;
   private final TeamsApiRequests teamsApiRequests;
 
-  public static OkHttpEnterpriseClient getInstance(
-      OkHttpClient okHttpClient, URL url, String token, String client, String version)
+  public OkHttpEnterpriseClient(URL url, String token, String client, String version)
       throws EnterprisePluginException {
-    OkHttpEnterpriseClient enterpriseClient = new OkHttpEnterpriseClient(okHttpClient, url, token);
-    enterpriseClient.privateApiRequests.checkVersionSupport(client, version);
-    return enterpriseClient;
-  }
-
-  public static OkHttpEnterpriseClient getInstance(
-      URL url, String token, String client, String version) throws EnterprisePluginException {
-    return getInstance(new OkHttpClient(), url, token, client, version);
-  }
-
-  private OkHttpEnterpriseClient(OkHttpClient okHttpClient, URL url, String token) {
     final HttpUrl httpUrl = HttpUrl.get(url);
     if (httpUrl == null) {
       throw new IllegalArgumentException(
           String.format("'%s' is not a valid HTTP or HTTPS URL", url));
     }
 
-    this.privateApiRequests = new PrivateApiRequests(okHttpClient, httpUrl, token);
-    this.packagesApiRequests = new PackagesApiRequests(okHttpClient, httpUrl, token);
-    this.poolsApiRequests = new PoolsApiRequests(okHttpClient, httpUrl, token);
-    this.simulationsApiRequests = new SimulationsApiRequests(okHttpClient, httpUrl, token);
-    this.teamsApiRequests = new TeamsApiRequests(okHttpClient, httpUrl, token);
+    okHttpClient = new OkHttpClient();
+    privateApiRequests = new PrivateApiRequests(okHttpClient, httpUrl, token);
+    packagesApiRequests = new PackagesApiRequests(okHttpClient, httpUrl, token);
+    poolsApiRequests = new PoolsApiRequests(okHttpClient, httpUrl, token);
+    simulationsApiRequests = new SimulationsApiRequests(okHttpClient, httpUrl, token);
+    teamsApiRequests = new TeamsApiRequests(okHttpClient, httpUrl, token);
+    try {
+      privateApiRequests.checkVersionSupport(client, version);
+    } catch (Exception e) {
+      close();
+      throw e;
+    }
   }
 
   @Override
@@ -157,5 +153,12 @@ public final class OkHttpEnterpriseClient implements EnterpriseClient {
   @Override
   public Pkg createPackage(String packageName, UUID teamId) throws EnterprisePluginException {
     return packagesApiRequests.createPackage(new PackageCreationPayload(packageName, teamId));
+  }
+
+  @Override
+  public void close() {
+    okHttpClient.connectionPool().evictAll();
+    okHttpClient.dispatcher().cancelAll();
+    okHttpClient.dispatcher().executorService().shutdown();
   }
 }

@@ -24,7 +24,7 @@ import io.gatling.plugin.io.PluginLogger;
 import java.io.File;
 import java.util.UUID;
 
-abstract class PluginClient {
+abstract class PluginClient implements AutoCloseable {
 
   protected final EnterpriseClient enterpriseClient;
   protected final PluginLogger logger;
@@ -44,5 +44,10 @@ abstract class PluginClient {
       logger.info("Package uploaded");
     }
     return file.length();
+  }
+
+  @Override
+  public void close() throws Exception {
+    enterpriseClient.close();
   }
 }
