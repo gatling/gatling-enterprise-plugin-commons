@@ -27,8 +27,7 @@ lazy val root = (project in file("."))
       "com.squareup.okhttp3"       % "mockwebserver"        % okHttp3Version                   % Test,
       "com.squareup.okhttp3"       % "okhttp"               % okHttp3Version,
       "com.fasterxml.jackson.core" % "jackson-databind"     % "2.13.2",
-      "org.apache.commons"         % "commons-exec"         % "1.3",
-      "org.codehaus.plexus"        % "plexus-utils"         % "3.4.1"
+      "org.apache.commons"         % "commons-exec"         % "1.3"
     ),
     spotlessJava := JavaConfig(
       googleJavaFormat = GoogleJavaFormatConfig()

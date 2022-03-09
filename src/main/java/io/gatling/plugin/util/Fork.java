@@ -31,9 +31,8 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import org.apache.commons.exec.*;
-import org.codehaus.plexus.util.StringUtils;
 
-public class Fork {
+public final class Fork {
 
   private static final String ARG_FILE_PREFIX = "gatling-";
   private static final String ARG_FILE_SUFFIX = ".args";
@@ -123,6 +122,73 @@ public class Fork {
     return value.contains(" ") ? '"' + value + '"' : value;
   }
 
+  /**
+   * Escapes any values it finds into their String form.
+   *
+   * <p>So a tab becomes the characters <code>'\\'</code> and <code>'t'</code>.
+   *
+   * @param str String to escape values in
+   * @return String with escaped values
+   * @throws NullPointerException if str is <code>null</code>
+   */
+  // forked from plexus-util
+  private static String escape(String str) {
+    // improved with code from cybertiger@cyberiantiger.org
+    // unicode from him, and default for < 32's.
+    StringBuilder buffer = new StringBuilder(2 * str.length());
+    for (char ch : str.toCharArray()) {
+      // handle unicode
+      if (ch > 0xfff) {
+        buffer.append("\\u" + Integer.toHexString(ch));
+      } else if (ch > 0xff) {
+        buffer.append("\\u0" + Integer.toHexString(ch));
+      } else if (ch > 0x7f) {
+        buffer.append("\\u00" + Integer.toHexString(ch));
+      } else if (ch < 32) {
+        switch (ch) {
+          case '\b':
+            buffer.append('\\').append('b');
+            break;
+          case '\n':
+            buffer.append('\\').append('n');
+            break;
+          case '\t':
+            buffer.append('\\').append('t');
+            break;
+          case '\f':
+            buffer.append('\\').append('f');
+            break;
+          case '\r':
+            buffer.append('\\').append('r');
+            break;
+          default:
+            if (ch > 0xf) {
+              buffer.append("\\u00" + Integer.toHexString(ch));
+            } else {
+              buffer.append("\\u000" + Integer.toHexString(ch));
+            }
+            break;
+        }
+      } else {
+        switch (ch) {
+          case '\'':
+            buffer.append('\\').append('\'');
+            break;
+          case '"':
+            buffer.append('\\').append('"');
+            break;
+          case '\\':
+            buffer.append('\\').append('\\');
+            break;
+          default:
+            buffer.append(ch);
+            break;
+        }
+      }
+    }
+    return buffer.toString();
+  }
+
   public void run() throws Exception {
     if (propagateSystemProperties) {
       for (Entry<Object, Object> systemProp : System.getProperties().entrySet()) {
@@ -142,7 +208,7 @@ public class Fork {
                     + "' contains a whitespace and can't be propagated on Windows");
 
           } else {
-            this.jvmArgs.add("-D" + name + "=" + safe(StringUtils.escape(value)));
+            this.jvmArgs.add("-D" + name + "=" + safe(escape(value)));
           }
         }
       }
