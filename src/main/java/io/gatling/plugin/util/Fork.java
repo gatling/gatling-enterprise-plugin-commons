@@ -49,12 +49,12 @@ public final class Fork {
   private final List<String> args = new ArrayList<>();
 
   public Fork(
-      String mainClassName, //
-      List<String> classpath, //
-      List<String> jvmArgs, //
-      List<String> args, //
-      String javaExecutable, //
-      boolean propagateSystemProperties, //
+      String mainClassName,
+      List<String> classpath,
+      List<String> jvmArgs,
+      List<String> args,
+      String javaExecutable,
+      boolean propagateSystemProperties,
       PluginLogger log) {
 
     this(
@@ -69,13 +69,13 @@ public final class Fork {
   }
 
   public Fork(
-      String mainClassName, //
-      List<String> classpath, //
-      List<String> jvmArgs, //
-      List<String> args, //
-      String javaExecutable, //
-      boolean propagateSystemProperties, //
-      PluginLogger log, //
+      String mainClassName,
+      List<String> classpath,
+      List<String> jvmArgs,
+      List<String> args,
+      String javaExecutable,
+      boolean propagateSystemProperties,
+      PluginLogger log,
       File workingDirectory) {
 
     this.mainClassName = mainClassName;
@@ -288,29 +288,27 @@ public final class Fork {
     return file;
   }
 
+  // encode any characters that do not comply with RFC 2396
+  // this is primarily to handle Windows where the user's home directory contains
+  // spaces
   private static URL getURL(File file) throws MalformedURLException {
-
-    // encode any characters that do not comply with RFC 2396
-    // this is primarily to handle Windows where the user's home directory contains
-    // spaces
-
     return new URL(file.toURI().toASCIIString());
   }
 
   private boolean isPropagatableProperty(String name) {
-    return !name.startsWith("java.") //
-        && !name.startsWith("sun.") //
-        && !name.startsWith("maven.") //
-        && !name.startsWith("file.") //
-        && !name.startsWith("awt.") //
-        && !name.startsWith("os.") //
-        && !name.startsWith("user.") //
-        && !name.startsWith("idea.") //
-        && !name.startsWith("guice.") //
-        && !name.startsWith("hudson.") //
-        && !name.equals("line.separator") //
-        && !name.equals("path.separator") //
-        && !name.equals("classworlds.conf") //
+    return !name.startsWith("java.")
+        && !name.startsWith("sun.")
+        && !name.startsWith("maven.")
+        && !name.startsWith("file.")
+        && !name.startsWith("awt.")
+        && !name.startsWith("os.")
+        && !name.startsWith("user.")
+        && !name.startsWith("idea.")
+        && !name.startsWith("guice.")
+        && !name.startsWith("hudson.")
+        && !name.equals("line.separator")
+        && !name.equals("path.separator")
+        && !name.equals("classworlds.conf")
         && !name.equals("org.slf4j.simpleLogger.defaultLogLevel");
   }
 
