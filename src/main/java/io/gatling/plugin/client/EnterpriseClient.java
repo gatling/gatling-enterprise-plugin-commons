@@ -38,15 +38,15 @@ public interface EnterpriseClient {
 
   List<Simulation> getSimulations() throws EnterprisePluginException;
 
-  public Simulation getSimulation(UUID simulationId) throws EnterprisePluginException;
+  Simulation getSimulation(UUID simulationId) throws EnterprisePluginException;
 
-  public List<Team> getTeams() throws EnterprisePluginException;
+  List<Team> getTeams() throws EnterprisePluginException;
 
-  public List<Pool> getPools() throws EnterprisePluginException;
+  List<Pool> getPools() throws EnterprisePluginException;
 
   List<PkgIndex> getPackages() throws EnterprisePluginException;
 
-  public Pkg getPackage(UUID pkgId) throws EnterprisePluginException;
+  Pkg getPackage(UUID pkgId) throws EnterprisePluginException;
 
   /**
    * @param packageId Required
