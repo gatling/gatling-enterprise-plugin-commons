@@ -50,7 +50,7 @@ public interface EnterpriseClient extends AutoCloseable {
 
   /**
    * @param packageId Required
-   * @param file Path to the packaged JAR file to upload; required
+   * @param file Required path to the packaged JAR file to upload; required
    * @throws PackageNotFoundException if the packageId does not exist
    */
   long uploadPackage(UUID packageId, File file) throws EnterprisePluginException;
@@ -69,6 +69,14 @@ public interface EnterpriseClient extends AutoCloseable {
    * @return file size if uploaded, -1 when checksum are equals
    */
   long uploadPackageWithChecksum(UUID packageId, File file) throws EnterprisePluginException;
+
+  /**
+   * @param simulationId Required
+   * @param className Required
+   * @return updated simulation
+   */
+  SimulationClassName updateSimulationClassName(UUID simulationId, String className)
+      throws EnterprisePluginException;
 
   Simulation createSimulation(
       String simulationName,

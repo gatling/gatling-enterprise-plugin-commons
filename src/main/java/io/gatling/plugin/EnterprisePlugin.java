@@ -38,31 +38,18 @@ import java.util.UUID;
 public interface EnterprisePlugin extends AutoCloseable {
 
   /**
-   * Upload file to the package associated with given packageId
-   *
-   * @param packageId Required
-   * @param file Path to the packaged JAR file to upload and run; required
-   */
-  long uploadPackage(UUID packageId, File file) throws EnterprisePluginException;
-
-  /**
-   * Upload file to the package associated to the given simulationId
-   *
-   * @param simulationId Required
-   * @param file Path to the packaged JAR file to upload and run; required
-   */
-  long uploadPackageWithSimulationId(UUID simulationId, File file) throws EnterprisePluginException;
-
-  /**
    * Upload file to the package configured on the given simulation ID, and start the simulation
    *
    * @param simulationId Required
    * @param systemProperties Required, can be an empty map
+   * @param simulationClass Optional, override simulation configured class name for next run
    * @param file Required, Path to the packaged JAR file to upload and run
    * @throws SimulationNotFoundException if the simulationId does not exist
+   * @throws InvalidSimulationClassException if simulationClass is defined or simulation class name
+   *     has not been discovered
    */
   SimulationStartResult uploadPackageAndStartSimulation(
-      UUID simulationId, Map<String, String> systemProperties, File file)
+      UUID simulationId, Map<String, String> systemProperties, String simulationClass, File file)
       throws EnterprisePluginException;
 
   /**
@@ -71,11 +58,15 @@ public interface EnterprisePlugin extends AutoCloseable {
    * @param teamId Optional
    * @param groupId Optional
    * @param artifactId Required
-   * @param simulationClass Required
+   * @param simulationClass Optional
    * @param packageId Optional
    * @param systemProperties Required, can be an empty Map
    * @param file Required
    * @throws SimulationStartException if simulation start failed after creation
+   * @throws SeveralTeamsFoundException if teamId is null and there's more than one team discovered
+   * @throws SeveralSimulationClassNamesFoundException if simulationClass is null and there's more
+   *     than one simulation class name discovered
+   * @throws InvalidSimulationClassException if simulationClass is defined, but not discovered
    */
   SimulationStartResult createAndStartSimulation(
       UUID teamId,

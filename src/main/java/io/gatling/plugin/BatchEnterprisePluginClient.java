@@ -16,6 +16,7 @@
 
 package io.gatling.plugin;
 
+import static io.gatling.plugin.EnterpriseSimulationScanner.simulationFullyQualifiedNamesFromFile;
 import static io.gatling.plugin.util.ObjectsUtil.nonEmptyParam;
 import static io.gatling.plugin.util.ObjectsUtil.nonNullParam;
 
@@ -27,9 +28,10 @@ import io.gatling.plugin.model.Pkg;
 import java.io.File;
 import java.util.*;
 
-public final class EnterprisePluginClient extends PluginClient implements EnterprisePlugin {
+public final class BatchEnterprisePluginClient extends PluginClient
+    implements BatchEnterprisePlugin {
 
-  public EnterprisePluginClient(EnterpriseClient enterpriseClient, PluginLogger logger) {
+  public BatchEnterprisePluginClient(EnterpriseClient enterpriseClient, PluginLogger logger) {
     super(enterpriseClient, logger);
   }
 
@@ -51,7 +53,7 @@ public final class EnterprisePluginClient extends PluginClient implements Enterp
 
   @Override
   public SimulationStartResult uploadPackageAndStartSimulation(
-      UUID simulationId, Map<String, String> systemProperties, File file)
+      UUID simulationId, Map<String, String> systemProperties, String simulationClass, File file)
       throws EnterprisePluginException {
     nonNullParam(simulationId, "simulationId");
     nonNullParam(systemProperties, "systemProperties");
@@ -59,6 +61,17 @@ public final class EnterprisePluginClient extends PluginClient implements Enterp
 
     final Simulation simulation = enterpriseClient.getSimulation(simulationId);
     uploadPackageWithChecksum(simulation.pkgId, file);
+
+    String className = simulationClassName(simulation, file, simulationClass);
+
+    if (!simulation.className.equals(className)) {
+      logger.info(
+          String.format(
+              "The Simulation configured in Gatling Enterprise was using the class %s. Updating to %s.",
+              simulation.className, className));
+      enterpriseClient.updateSimulationClassName(simulation.id, className);
+    }
+
     final RunSummary runSummary = enterpriseClient.startSimulation(simulationId, systemProperties);
     return new SimulationStartResult(simulation, runSummary, false);
   }
@@ -74,15 +87,15 @@ public final class EnterprisePluginClient extends PluginClient implements Enterp
       File file)
       throws EnterprisePluginException {
     nonEmptyParam(artifactId, "artifactId");
-    nonEmptyParam(simulationClass, "className");
 
+    final String className = simulationClassName(null, file, simulationClass);
     final Team team = defaultTeam(teamId);
     final Pkg pkg =
         packageId != null
             ? enterpriseClient.getPackage(packageId)
             : createAndUploadDefaultPackage(team, groupId, artifactId, file);
     final Map<UUID, HostByPool> hostsByPool = defaultHostByPool();
-    return createAndStartSimulation(team, pkg, simulationClass, hostsByPool, systemProperties);
+    return createAndStartSimulation(team, pkg, className, hostsByPool, systemProperties);
   }
 
   private Team defaultTeam(UUID teamId) throws EnterprisePluginException {
@@ -144,5 +157,27 @@ public final class EnterprisePluginClient extends PluginClient implements Enterp
     } catch (EnterprisePluginException e) {
       throw new SimulationStartException(simulation, e);
     }
+  }
+
+  private String simulationClassName(Simulation simulation, File file, String simulationClass)
+      throws EnterprisePluginException {
+    final List<String> discoveredSimulationClasses = simulationFullyQualifiedNamesFromFile(file);
+
+    if (discoveredSimulationClasses.isEmpty()) {
+      throw new NoSimulationClassNameFoundException();
+    } else if (simulationClass != null) {
+      if (!discoveredSimulationClasses.contains(simulationClass)) {
+        throw new InvalidSimulationClassException(discoveredSimulationClasses, simulationClass);
+      }
+      return simulationClass;
+    } else if (simulation != null && discoveredSimulationClasses.contains(simulation.className)) {
+      return simulation.className;
+    } else if (discoveredSimulationClasses.size() == 1) {
+      String head = discoveredSimulationClasses.get(0);
+      logger.info("Pick only available simulation class name " + head);
+      return head;
+    }
+
+    throw new SeveralSimulationClassNamesFoundException(discoveredSimulationClasses);
   }
 }

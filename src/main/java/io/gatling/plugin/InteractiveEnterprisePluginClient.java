@@ -16,12 +16,11 @@
 
 package io.gatling.plugin;
 
+import static io.gatling.plugin.EnterpriseSimulationScanner.simulationFullyQualifiedNamesFromFile;
 import static io.gatling.plugin.util.ObjectsUtil.nonNullParam;
 
 import io.gatling.plugin.client.EnterpriseClient;
-import io.gatling.plugin.exceptions.EnterprisePluginException;
-import io.gatling.plugin.exceptions.SimulationStartException;
-import io.gatling.plugin.exceptions.UserQuitException;
+import io.gatling.plugin.exceptions.*;
 import io.gatling.plugin.io.PluginIO;
 import io.gatling.plugin.io.input.InputChoice;
 import io.gatling.plugin.model.*;
@@ -43,35 +42,69 @@ public final class InteractiveEnterprisePluginClient extends PluginClient
     this.inputChoice = new InputChoice(pluginIO);
   }
 
-  public SimulationStartResult createOrStartSimulation(
+  public SimulationStartResult uploadPackageAndStartSimulation(
+      UUID simulationId,
+      Map<String, String> systemProperties,
+      String configuredSimulationClass,
+      File file)
+      throws EnterprisePluginException {
+    nonNullParam(simulationId, "simulationId");
+    nonNullParam(systemProperties, "systemProperties");
+    nonNullParam(file, "file");
+
+    final Simulation simulation = enterpriseClient.getSimulation(simulationId);
+    final List<String> simulationClasses = simulationFullyQualifiedNamesFromFile(file);
+
+    uploadPackageWithChecksum(simulation.pkgId, file);
+    return startSimulation(
+        simulation, file, systemProperties, configuredSimulationClass, simulationClasses);
+  }
+
+  public SimulationStartResult createAndStartSimulation(
       UUID teamId,
       String groupId,
       String artifactId,
-      String simulationClass,
-      List<String> discoveredSimulationClasses,
+      String configuredSimulationClass,
       UUID configuredPackageId,
       Map<String, String> systemProperties,
       File file)
-      throws EnterprisePluginException, EmptyChoicesException {
-    nonNullParam(discoveredSimulationClasses, "discoveredSimulationClasses");
+      throws EnterprisePluginException {
     nonNullParam(systemProperties, "systemProperties");
     nonNullParam(file, "file");
+
+    List<String> discoveredSimulationClasses =
+        EnterpriseSimulationScanner.simulationFullyQualifiedNamesFromFile(file);
 
     List<Simulation> simulations = enterpriseClient.getSimulations();
     boolean createSimulation = simulations.isEmpty() || chooseIfCreateSimulation();
 
-    return createSimulation
-        ? createAndStart(
-            teamId,
-            groupId,
-            artifactId,
-            simulationClass,
-            discoveredSimulationClasses,
-            configuredPackageId,
-            file,
-            simulations,
-            systemProperties)
-        : startSimulation(file, systemProperties, simulations);
+    if (createSimulation) {
+      return createAndStart(
+          teamId,
+          groupId,
+          artifactId,
+          configuredSimulationClass,
+          discoveredSimulationClasses,
+          configuredPackageId,
+          file,
+          simulations,
+          systemProperties);
+    } else {
+
+      if (simulations.isEmpty()) {
+        throw new EmptyChoicesException("simulations");
+      }
+      final Simulation simulation =
+          inputChoice.inputFromList(
+              simulations, Show::simulation, Comparator.comparing(s -> s.name));
+
+      return startSimulation(
+          simulation,
+          file,
+          systemProperties,
+          configuredSimulationClass,
+          discoveredSimulationClasses);
+    }
   }
 
   private boolean chooseIfCreateSimulation() throws UserQuitException {
@@ -83,22 +116,25 @@ public final class InteractiveEnterprisePluginClient extends PluginClient
   }
 
   private SimulationStartResult startSimulation(
-      File packageFile, Map<String, String> systemProperties, List<Simulation> simulations)
+      Simulation simulation,
+      File packageFile,
+      Map<String, String> systemProperties,
+      String configuredSimulationClass,
+      List<String> discoveredSimulationClasses)
       throws EnterprisePluginException, EmptyChoicesException {
-    logger.info("Proceeding to start simulation");
-
-    if (simulations.isEmpty()) {
-      throw new EmptyChoicesException("simulations");
-    }
-    final Simulation simulation =
-        inputChoice.inputFromList(simulations, Show::simulation, Comparator.comparing(s -> s.name));
+    logger.info("Proceeding to start simulation " + simulation.name);
 
     uploadPackageWithChecksum(simulation.pkgId, packageFile);
 
-    final RunSummary runSummary = enterpriseClient.startSimulation(simulation.id, systemProperties);
+    final String className =
+        chooseClassName(simulation, configuredSimulationClass, discoveredSimulationClasses);
 
-    // TODO: custom pools from configuration, MISC-313
-    return new SimulationStartResult(simulation, runSummary, false);
+    if (!simulation.className.equals(className)) {
+      logger.info("Update simulation class name to configured value " + className);
+      enterpriseClient.updateSimulationClassName(simulation.id, className);
+    }
+
+    return startSimulation(simulation, systemProperties, className, false);
   }
 
   /**
@@ -123,49 +159,38 @@ public final class InteractiveEnterprisePluginClient extends PluginClient
       Map<String, String> systemProperties)
       throws EnterprisePluginException, EmptyChoicesException {
     logger.info("Proceeding to the create simulation step");
-    String simulationClass =
-        chooseSimulationClass(configuredSimulationClass, discoveredSimulationClasses);
+    String className =
+        chooseClassName(null, configuredSimulationClass, discoveredSimulationClasses);
     Team team = chooseTeam(configuredTeamId);
-    String simulationName = chooseSimulationName(simulationClass, existingSimulations);
+    String simulationName = chooseSimulationName(className, existingSimulations);
     Pkg pkg = chooseOrCreatePackage(team.id, groupId, artifactId, configuredPackageId);
     Pool pool = choosePool();
     int size = chooseSize();
 
     uploadPackageWithChecksum(pkg.id, packageFile);
 
-    // TODO: custom pools from configuration, MISC-313
     Map<UUID, HostByPool> hostsByPool =
         Collections.singletonMap(pool.id, new HostByPool(size, DEFAULT_HOST_WEIGHT));
     Simulation simulation =
-        enterpriseClient.createSimulation(
-            simulationName, team.id, simulationClass, pkg.id, hostsByPool);
+        enterpriseClient.createSimulation(simulationName, team.id, className, pkg.id, hostsByPool);
 
+    return startSimulation(simulation, systemProperties, className, true);
+  }
+
+  // TODO: custom pools from configuration, MISC-313
+  private SimulationStartResult startSimulation(
+      Simulation simulation,
+      Map<String, String> systemProperties,
+      String className,
+      boolean created)
+      throws SimulationStartException {
     try {
+      logger.info("Start simulation using simulation class name: " + className);
       RunSummary runSummary = enterpriseClient.startSimulation(simulation.id, systemProperties);
-      return new SimulationStartResult(simulation, runSummary, true);
+      return new SimulationStartResult(simulation, runSummary, created);
     } catch (EnterprisePluginException e) {
       throw new SimulationStartException(simulation, e);
     }
-  }
-
-  private String chooseSimulationClass(
-      String configuredSimulationClass, List<String> discoveredSimulationClasses)
-      throws UserQuitException {
-    if (configuredSimulationClass != null && !configuredSimulationClass.isEmpty()) {
-      // Always accept explicit simulationClass configuration
-      logger.info("Picking the configured simulation class: " + configuredSimulationClass);
-      return configuredSimulationClass;
-    }
-
-    if (discoveredSimulationClasses.isEmpty()) {
-      throw new IllegalStateException(
-          "No simulation class discovered. Your project should contain at least one simulation (https://gatling.io/docs/gatling/reference/current/core/simulation/).");
-    }
-
-    logger.info("Choose a simulation class from the list:");
-    final List<String> choices =
-        discoveredSimulationClasses.stream().sorted().collect(Collectors.toList());
-    return inputChoice.inputFromStringList(choices, true);
   }
 
   /** @param configuredTeamId Optional */
@@ -324,5 +349,42 @@ public final class InteractiveEnterprisePluginClient extends PluginClient
   private int chooseSize() {
     logger.info("Enter the number of load injectors");
     return inputChoice.inputInt(1);
+  }
+
+  private String chooseClassName(
+      Simulation simulation,
+      String configuredSimulationClass,
+      List<String> discoveredSimulationClasses)
+      throws EnterprisePluginException {
+
+    if (discoveredSimulationClasses.isEmpty()) {
+      throw new NoSimulationClassNameFoundException();
+    } else if (configuredSimulationClass != null) {
+      if (!discoveredSimulationClasses.contains(configuredSimulationClass)) {
+        // Configured class name is invalid
+        throw new InvalidSimulationClassException(
+            discoveredSimulationClasses, configuredSimulationClass);
+      }
+      if (simulation.className.equals(configuredSimulationClass)) {
+        // Configured class name match simulation class name
+        return simulation.className;
+      } else {
+        // Simulation have been updated to configured class name
+        return configuredSimulationClass;
+      }
+    } else if (simulation != null && discoveredSimulationClasses.contains(simulation.className)) {
+      // Simulation class name is still valid, and there's no configured class name
+      return simulation.className;
+    } else {
+      if (simulation != null) {
+        logger.info(
+            "Simulation configured class name '"
+                + simulation.className
+                + "' has not been discovered.");
+      }
+      logger.info("Choose one simulation class in your package:");
+      // Simulation class name is invalid, new
+      return inputChoice.inputFromStringList(discoveredSimulationClasses, true);
+    }
   }
 }

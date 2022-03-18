@@ -20,9 +20,7 @@ import static io.gatling.plugin.client.json.JsonUtil.JSON_MAPPER;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -69,18 +67,6 @@ public class JsonMarshallingTest {
     final String actual = JSON_MAPPER.writeValueAsString(simulation);
     final String expected =
         "{\"name\":\"My Gatling Simulation\",\"teamId\":\"2bc38879-6dd1-461d-a8fd-47df4991fd9b\",\"className\":\"my.package.MyGatlingSimulation\",\"systemProperties\":{\"key_2\":\"Second Value\",\"key_1\":\"First Value\"},\"ignoreGlobalProperties\":false,\"meaningfulTimeWindow\":{\"rampUp\":5,\"rampDown\":10},\"hostsByPool\":{\"b2a567f7-07f1-4de7-857a-2e0450b73377\":{\"size\":1,\"weight\":25},\"43d47d5e-86c3-4918-b047-caf7fb1f1f71\":{\"size\":2,\"weight\":75}},\"usePoolWeights\":true,\"usePoolDedicatedIps\":false,\"build\":{\"pkgId\":\"0cf26226-b261-4af6-a52a-1fec36f4394a\"}}";
-    assertEquals(expected, actual);
-  }
-
-  @Test
-  public void SystemPropertyList_marshall() throws JsonProcessingException {
-    final List<SystemProperty> simulation =
-        Arrays.asList(
-            new SystemProperty("Property 1", "Value 1"),
-            new SystemProperty("Property 2", "Value 2"));
-    final String actual = JSON_MAPPER.writeValueAsString(simulation);
-    final String expected =
-        "[{\"key\":\"Property 1\",\"value\":\"Value 1\"},{\"key\":\"Property 2\",\"value\":\"Value 2\"}]";
     assertEquals(expected, actual);
   }
 }
