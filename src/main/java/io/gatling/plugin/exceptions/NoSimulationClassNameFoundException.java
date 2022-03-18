@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package io.gatling.plugin;
+package io.gatling.plugin.exceptions;
 
-public final class EmptyChoicesException extends RuntimeException {
-
-  public EmptyChoicesException(String name) {
-    super("There are no choices available for " + name);
+public class NoSimulationClassNameFoundException extends EnterprisePluginException {
+  public NoSimulationClassNameFoundException() {
+    super(
+        "No simulation class discovered. Your project should contain at least one class extending Simulation (https://gatling.io/docs/gatling/reference/current/core/simulation/).");
   }
 }
