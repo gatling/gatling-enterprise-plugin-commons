@@ -14,11 +14,18 @@
  * limitations under the License.
  */
 
-package io.gatling.plugin;
+package io.gatling.plugin.exceptions;
 
-public final class EmptyChoicesException extends RuntimeException {
+import java.util.List;
 
-  public EmptyChoicesException(String name) {
-    super("There are no choices available for " + name);
+public class InvalidSimulationClassException extends EnterprisePluginException {
+
+  public InvalidSimulationClassException(
+      List<String> availableSimulationClassNames, String configuredSimulationClassName) {
+    super(
+        "Configured simulation class name '"
+            + configuredSimulationClassName
+            + "' has not been discovered in "
+            + availableSimulationClassNames);
   }
 }

@@ -16,36 +16,38 @@
 
 package io.gatling.plugin.model;
 
-import static io.gatling.plugin.util.ObjectsUtil.nonNullParam;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 
-public final class SystemProperty {
-  public final String key;
-  public final String value;
+public class SimulationClassName {
 
-  public SystemProperty(String key, String value) {
-    nonNullParam(key, "key");
-    nonNullParam(value, "value");
-    this.key = key;
-    this.value = value;
+  public final String className;
+
+  @JsonCreator
+  public SimulationClassName(@JsonProperty(value = "className", required = true) String className) {
+    this.className = className;
+  }
+
+  public String getClassName() {
+    return className;
   }
 
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-    SystemProperty that = (SystemProperty) o;
-    return key.equals(that.key) && value.equals(that.value);
+    SimulationClassName that = (SimulationClassName) o;
+    return Objects.equals(className, that.className);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(key, value);
+    return Objects.hash(className);
   }
 
   @Override
   public String toString() {
-    return String.format("SystemProperty{key='%s',value='%s'}", key, value);
+    return "SimulationClassName{" + "className='" + className + '\'' + '}';
   }
 }

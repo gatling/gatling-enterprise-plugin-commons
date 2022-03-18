@@ -26,7 +26,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.*;
-import java.util.stream.Collectors;
 import okhttp3.*;
 
 public final class OkHttpEnterpriseClient implements EnterpriseClient {
@@ -102,12 +101,9 @@ public final class OkHttpEnterpriseClient implements EnterpriseClient {
   public RunSummary startSimulation(UUID simulationId, Map<String, String> systemProperties)
       throws EnterprisePluginException {
 
-    final List<SystemProperty> sysPropsList =
-        systemProperties.entrySet().stream()
-            .map(entry -> new SystemProperty(entry.getKey(), entry.getValue()))
-            .collect(Collectors.toList());
+    final StartOptions options = new StartOptions(systemProperties);
 
-    return simulationsApiRequests.startSimulation(simulationId, sysPropsList);
+    return simulationsApiRequests.startSimulation(simulationId, options);
   }
 
   private boolean checksumComparison(UUID packageId, File file) throws EnterprisePluginException {
@@ -125,6 +121,12 @@ public final class OkHttpEnterpriseClient implements EnterpriseClient {
   public long uploadPackageWithChecksum(UUID packageId, File file)
       throws EnterprisePluginException {
     return checksumComparison(packageId, file) ? -1 : uploadPackage(packageId, file);
+  }
+
+  @Override
+  public SimulationClassName updateSimulationClassName(UUID simulationId, String className)
+      throws EnterprisePluginException {
+    return simulationsApiRequests.updateSimulationClassName(simulationId, className);
   }
 
   @Override

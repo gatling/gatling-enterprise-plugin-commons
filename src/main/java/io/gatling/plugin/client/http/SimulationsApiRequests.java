@@ -19,11 +19,7 @@ package io.gatling.plugin.client.http;
 import com.fasterxml.jackson.core.type.TypeReference;
 import io.gatling.plugin.exceptions.EnterprisePluginException;
 import io.gatling.plugin.exceptions.SimulationNotFoundException;
-import io.gatling.plugin.model.RunSummary;
-import io.gatling.plugin.model.Simulation;
-import io.gatling.plugin.model.SimulationCreationPayload;
-import io.gatling.plugin.model.Simulations;
-import io.gatling.plugin.model.SystemProperty;
+import io.gatling.plugin.model.*;
 import java.net.HttpURLConnection;
 import java.util.List;
 import java.util.UUID;
@@ -33,16 +29,16 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 
 class SimulationsApiRequests extends AbstractApiRequests {
+
+  private final HttpUrl simulationsUrl = url.newBuilder().addPathSegment("simulations").build();
+
   SimulationsApiRequests(OkHttpClient okHttpClient, HttpUrl url, String token) {
     super(okHttpClient, url, token);
   }
 
   Simulation getSimulation(UUID simulationId) throws EnterprisePluginException {
     HttpUrl requestUrl =
-        url.newBuilder()
-            .addPathSegment("simulations")
-            .addPathSegment(simulationId.toString())
-            .build();
+        simulationsUrl.newBuilder().addPathSegment(simulationId.toString()).build();
     Request.Builder request = new Request.Builder().url(requestUrl).get();
     return executeRequest(
         request,
@@ -55,8 +51,7 @@ class SimulationsApiRequests extends AbstractApiRequests {
   }
 
   Simulations listSimulations() throws EnterprisePluginException {
-    HttpUrl requestUrl = url.newBuilder().addPathSegment("simulations").build();
-    Request.Builder request = new Request.Builder().url(requestUrl).get();
+    Request.Builder request = new Request.Builder().url(simulationsUrl).get();
     return executeRequest(
         request,
         response -> {
@@ -68,21 +63,35 @@ class SimulationsApiRequests extends AbstractApiRequests {
 
   Simulation createSimulation(SimulationCreationPayload simulation)
       throws EnterprisePluginException {
-    HttpUrl requestUrl = url.newBuilder().addPathSegment("simulations").build();
     RequestBody body = jsonRequestBody(simulation);
-    Request.Builder request = new Request.Builder().url(requestUrl).post(body);
+    Request.Builder request = new Request.Builder().url(simulationsUrl).post(body);
     return executeRequest(request, response -> readResponseJson(response, Simulation.class));
   }
 
-  RunSummary startSimulation(UUID simulationId, List<SystemProperty> systemProperties)
+  RunSummary startSimulation(UUID simulationId, StartOptions options)
       throws EnterprisePluginException {
     HttpUrl requestUrl =
-        url.newBuilder()
-            .addPathSegments("simulations/start")
+        simulationsUrl
+            .newBuilder()
+            .addPathSegment("start")
             .addQueryParameter("simulation", simulationId.toString())
             .build();
-    RequestBody body = jsonRequestBody(systemProperties);
+    RequestBody body = jsonRequestBody(options);
     Request.Builder request = new Request.Builder().url(requestUrl).post(body);
     return executeRequest(request, response -> readResponseJson(response, RunSummary.class));
+  }
+
+  SimulationClassName updateSimulationClassName(UUID simulationId, String className)
+      throws EnterprisePluginException {
+    HttpUrl requestUrl =
+        simulationsUrl
+            .newBuilder()
+            .addPathSegment(simulationId.toString())
+            .addPathSegment("classname")
+            .build();
+    RequestBody body = jsonRequestBody(new SimulationClassName(className));
+    Request.Builder request = new Request.Builder().url(requestUrl).put(body);
+    return executeRequest(
+        request, response -> readResponseJson(response, SimulationClassName.class));
   }
 }
