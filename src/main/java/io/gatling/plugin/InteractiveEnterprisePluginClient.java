@@ -48,14 +48,20 @@ public final class InteractiveEnterprisePluginClient extends PluginClient
       String groupId,
       String artifactId,
       String simulationClass,
-      List<String> discoveredSimulationClasses,
       UUID configuredPackageId,
       Map<String, String> systemProperties,
       File file)
       throws EnterprisePluginException, EmptyChoicesException {
-    nonNullParam(discoveredSimulationClasses, "discoveredSimulationClasses");
     nonNullParam(systemProperties, "systemProperties");
     nonNullParam(file, "file");
+
+    List<String> discoveredSimulationClasses =
+        EnterpriseSimulationScanner.simulationFullyQualifiedNamesFromFile(file);
+
+    if (discoveredSimulationClasses.isEmpty()) {
+      throw new IllegalStateException(
+          "No simulation class discovered. Your project should contain at least one simulation (https://gatling.io/docs/gatling/reference/current/core/simulation/).");
+    }
 
     List<Simulation> simulations = enterpriseClient.getSimulations();
     boolean createSimulation = simulations.isEmpty() || chooseIfCreateSimulation();
@@ -71,7 +77,8 @@ public final class InteractiveEnterprisePluginClient extends PluginClient
             file,
             simulations,
             systemProperties)
-        : startSimulation(file, systemProperties, simulations);
+        : startSimulation(
+            file, systemProperties, simulationClass, discoveredSimulationClasses, simulations);
   }
 
   private boolean chooseIfCreateSimulation() throws UserQuitException {
@@ -82,8 +89,34 @@ public final class InteractiveEnterprisePluginClient extends PluginClient
     return inputChoice.inputFromStringList(choices, false).equals(create);
   }
 
+  private String startSimulationClass(
+      Simulation simulation,
+      String configuredSimulationClass,
+      List<String> discoveredSimulationClasses)
+      throws UserQuitException {
+    if (discoveredSimulationClasses.contains(simulation.className)) {
+      return simulation.className;
+    } else {
+      logger.info(
+          "Simulation class name '"
+              + simulation.className
+              + "' doesn't match any discovered simulation class names.");
+      String className =
+          chooseSimulationClass(configuredSimulationClass, discoveredSimulationClasses);
+      logger.info(
+          "Simulation class name have been set to '"
+              + className
+              + "' for next run only, please update your simulation configuration.");
+      return className;
+    }
+  }
+
   private SimulationStartResult startSimulation(
-      File packageFile, Map<String, String> systemProperties, List<Simulation> simulations)
+      File packageFile,
+      Map<String, String> systemProperties,
+      String configuredSimulationClass,
+      List<String> discoveredSimulationClasses,
+      List<Simulation> simulations)
       throws EnterprisePluginException, EmptyChoicesException {
     logger.info("Proceeding to start simulation");
 
@@ -93,9 +126,13 @@ public final class InteractiveEnterprisePluginClient extends PluginClient
     final Simulation simulation =
         inputChoice.inputFromList(simulations, Show::simulation, Comparator.comparing(s -> s.name));
 
+    final String simulationClass =
+        startSimulationClass(simulation, configuredSimulationClass, discoveredSimulationClasses);
+
     uploadPackageWithChecksum(simulation.pkgId, packageFile);
 
-    final RunSummary runSummary = enterpriseClient.startSimulation(simulation.id, systemProperties);
+    final RunSummary runSummary =
+        enterpriseClient.startSimulation(simulation.id, systemProperties, simulationClass);
 
     // TODO: custom pools from configuration, MISC-313
     return new SimulationStartResult(simulation, runSummary, false);
@@ -151,15 +188,17 @@ public final class InteractiveEnterprisePluginClient extends PluginClient
   private String chooseSimulationClass(
       String configuredSimulationClass, List<String> discoveredSimulationClasses)
       throws UserQuitException {
-    if (configuredSimulationClass != null && !configuredSimulationClass.isEmpty()) {
-      // Always accept explicit simulationClass configuration
-      logger.info("Picking the configured simulation class: " + configuredSimulationClass);
-      return configuredSimulationClass;
-    }
 
-    if (discoveredSimulationClasses.isEmpty()) {
-      throw new IllegalStateException(
-          "No simulation class discovered. Your project should contain at least one simulation (https://gatling.io/docs/gatling/reference/current/core/simulation/).");
+    if (configuredSimulationClass != null && !configuredSimulationClass.isEmpty()) {
+      if (discoveredSimulationClasses.contains(configuredSimulationClass)) {
+        logger.info("Picking the configured simulation class: " + configuredSimulationClass);
+        return configuredSimulationClass;
+      } else {
+        throw new IllegalStateException(
+            String.format(
+                "Configured simulation class (%s) has not been discovered. (https://gatling.io/docs/gatling/reference/current/core/simulation/)",
+                configuredSimulationClass));
+      }
     }
 
     logger.info("Choose a simulation class from the list:");

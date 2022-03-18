@@ -19,7 +19,6 @@ package io.gatling.plugin;
 import io.gatling.plugin.exceptions.*;
 import io.gatling.plugin.model.SimulationStartResult;
 import java.io.File;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -50,8 +49,6 @@ public interface InteractiveEnterprisePlugin extends AutoCloseable {
    * @param groupId Optional, if not null, will prefix the proposed package name
    * @param artifactId Optional, if not null, will suffix the proposed package name
    * @param simulationClass Optional, if not null, will be automatically picked
-   * @param discoveredSimulationClasses Required, the list of potential simulation classes in the
-   *     project, required
    * @param packageId Optional, if not null, will be automatically picked when creating a new
    *     simulation
    * @param systemProperties Required, can be an empty map; override conflicting system properties
@@ -64,7 +61,6 @@ public interface InteractiveEnterprisePlugin extends AutoCloseable {
       String groupId,
       String artifactId,
       String simulationClass,
-      List<String> discoveredSimulationClasses,
       UUID packageId,
       Map<String, String> systemProperties,
       File file)

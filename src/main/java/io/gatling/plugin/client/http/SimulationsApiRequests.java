@@ -19,11 +19,7 @@ package io.gatling.plugin.client.http;
 import com.fasterxml.jackson.core.type.TypeReference;
 import io.gatling.plugin.exceptions.EnterprisePluginException;
 import io.gatling.plugin.exceptions.SimulationNotFoundException;
-import io.gatling.plugin.model.RunSummary;
-import io.gatling.plugin.model.Simulation;
-import io.gatling.plugin.model.SimulationCreationPayload;
-import io.gatling.plugin.model.Simulations;
-import io.gatling.plugin.model.SystemProperty;
+import io.gatling.plugin.model.*;
 import java.net.HttpURLConnection;
 import java.util.List;
 import java.util.UUID;
@@ -74,14 +70,14 @@ class SimulationsApiRequests extends AbstractApiRequests {
     return executeRequest(request, response -> readResponseJson(response, Simulation.class));
   }
 
-  RunSummary startSimulation(UUID simulationId, List<SystemProperty> systemProperties)
+  RunSummary startSimulation(UUID simulationId, StartOptions options)
       throws EnterprisePluginException {
     HttpUrl requestUrl =
         url.newBuilder()
             .addPathSegments("simulations/start")
             .addQueryParameter("simulation", simulationId.toString())
             .build();
-    RequestBody body = jsonRequestBody(systemProperties);
+    RequestBody body = jsonRequestBody(options);
     Request.Builder request = new Request.Builder().url(requestUrl).post(body);
     return executeRequest(request, response -> readResponseJson(response, RunSummary.class));
   }

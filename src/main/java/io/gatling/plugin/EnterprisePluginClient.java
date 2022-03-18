@@ -16,6 +16,7 @@
 
 package io.gatling.plugin;
 
+import static io.gatling.plugin.EnterpriseSimulationScanner.simulationFullyQualifiedNamesFromFile;
 import static io.gatling.plugin.util.ObjectsUtil.nonEmptyParam;
 import static io.gatling.plugin.util.ObjectsUtil.nonNullParam;
 
@@ -51,16 +52,43 @@ public final class EnterprisePluginClient extends PluginClient implements Enterp
 
   @Override
   public SimulationStartResult uploadPackageAndStartSimulation(
-      UUID simulationId, Map<String, String> systemProperties, File file)
+      UUID simulationId, Map<String, String> systemProperties, String simulationClass, File file)
       throws EnterprisePluginException {
     nonNullParam(simulationId, "simulationId");
     nonNullParam(systemProperties, "systemProperties");
     nonNullParam(file, "file");
 
     final Simulation simulation = enterpriseClient.getSimulation(simulationId);
+    final List<String> simulationClasses = simulationFullyQualifiedNamesFromFile(file);
+
+    if (simulationClass != null && !simulationClasses.contains(simulationClass)) {
+      throw new InvalidSimulationClassException(simulationClasses, simulationClass);
+    }
+
+    if (!simulationClasses.contains(simulation.className)) {
+      throw new InvalidSimulationClassException(simulationClasses, simulation.className);
+    }
+
     uploadPackageWithChecksum(simulation.pkgId, file);
-    final RunSummary runSummary = enterpriseClient.startSimulation(simulationId, systemProperties);
+    final RunSummary runSummary =
+        enterpriseClient.startSimulation(simulationId, systemProperties, simulationClass);
     return new SimulationStartResult(simulation, runSummary, false);
+  }
+
+  private String simulationClassNameCreation(File file, String simulationClass)
+      throws EnterprisePluginException {
+    final List<String> simulationClasses = simulationFullyQualifiedNamesFromFile(file);
+    if (simulationClass == null) {
+      if (simulationClasses.size() > 1) {
+        throw new SeveralSimulationClassNamesFoundException(simulationClasses);
+      } else {
+        return simulationClasses.get(0);
+      }
+    } else if (!simulationClasses.contains(simulationClass)) {
+      throw new InvalidSimulationClassException(simulationClasses, simulationClass);
+    } else {
+      return simulationClass;
+    }
   }
 
   @Override
@@ -74,15 +102,15 @@ public final class EnterprisePluginClient extends PluginClient implements Enterp
       File file)
       throws EnterprisePluginException {
     nonEmptyParam(artifactId, "artifactId");
-    nonEmptyParam(simulationClass, "className");
 
+    final String className = simulationClassNameCreation(file, simulationClass);
     final Team team = defaultTeam(teamId);
     final Pkg pkg =
         packageId != null
             ? enterpriseClient.getPackage(packageId)
             : createAndUploadDefaultPackage(team, groupId, artifactId, file);
     final Map<UUID, HostByPool> hostsByPool = defaultHostByPool();
-    return createAndStartSimulation(team, pkg, simulationClass, hostsByPool, systemProperties);
+    return createAndStartSimulation(team, pkg, className, hostsByPool, systemProperties);
   }
 
   private Team defaultTeam(UUID teamId) throws EnterprisePluginException {

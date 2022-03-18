@@ -50,7 +50,7 @@ public interface EnterpriseClient extends AutoCloseable {
 
   /**
    * @param packageId Required
-   * @param file Path to the packaged JAR file to upload; required
+   * @param file Required path to the packaged JAR file to upload; required
    * @throws PackageNotFoundException if the packageId does not exist
    */
   long uploadPackage(UUID packageId, File file) throws EnterprisePluginException;
@@ -61,6 +61,16 @@ public interface EnterpriseClient extends AutoCloseable {
    * @throws SimulationStartException when start failed for any reason
    */
   RunSummary startSimulation(UUID simulationId, Map<String, String> systemProperties)
+      throws EnterprisePluginException;
+
+  /**
+   * @param simulationId Required
+   * @param systemProperties Required (can be an empty map)
+   * @param overrideSimulationClassName Optional, simulation class used for next run
+   * @throws SimulationStartException when start failed for any reason
+   */
+  RunSummary startSimulation(
+      UUID simulationId, Map<String, String> systemProperties, String overrideSimulationClassName)
       throws EnterprisePluginException;
 
   /**
