@@ -21,13 +21,19 @@ import io.gatling.plugin.model.Simulation;
 public class SimulationStartException extends EnterprisePluginException {
 
   private final Simulation simulation;
+  private final boolean created;
 
-  public SimulationStartException(Simulation simulation, Throwable cause) {
+  public SimulationStartException(Simulation simulation, boolean created, Throwable cause) {
     super("Failed to start simulation", cause);
     this.simulation = simulation;
+    this.created = created;
   }
 
   public Simulation getSimulation() {
     return simulation;
+  }
+
+  public boolean isCreated() {
+    return created;
   }
 }
