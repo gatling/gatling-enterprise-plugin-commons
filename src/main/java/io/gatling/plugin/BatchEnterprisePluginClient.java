@@ -155,7 +155,7 @@ public final class BatchEnterprisePluginClient extends PluginClient
           enterpriseClient.startSimulation(simulation.id, systemProperties);
       return new SimulationStartResult(simulation, runSummary, true);
     } catch (EnterprisePluginException e) {
-      throw new SimulationStartException(simulation, e);
+      throw new SimulationStartException(simulation, true, e);
     }
   }
 

@@ -199,7 +199,7 @@ public final class InteractiveEnterprisePluginClient extends PluginClient
       RunSummary runSummary = enterpriseClient.startSimulation(simulation.id, systemProperties);
       return new SimulationStartResult(simulation, runSummary, created);
     } catch (EnterprisePluginException e) {
-      throw new SimulationStartException(simulation, e);
+      throw new SimulationStartException(simulation, created, e);
     }
   }
 
