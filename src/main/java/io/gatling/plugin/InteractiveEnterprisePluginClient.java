@@ -56,8 +56,8 @@ public final class InteractiveEnterprisePluginClient extends PluginClient
     final List<String> simulationClasses = simulationFullyQualifiedNamesFromFile(file);
 
     uploadPackageWithChecksum(simulation.pkgId, file);
-    return startSimulation(
-        simulation, file, systemProperties, configuredSimulationClass, simulationClasses);
+    return launchSimulation(
+        simulation, systemProperties, configuredSimulationClass, simulationClasses);
   }
 
   public SimulationStartResult createAndStartSimulation(
@@ -126,6 +126,16 @@ public final class InteractiveEnterprisePluginClient extends PluginClient
 
     uploadPackageWithChecksum(simulation.pkgId, packageFile);
 
+    return launchSimulation(
+        simulation, systemProperties, configuredSimulationClass, discoveredSimulationClasses);
+  }
+
+  private SimulationStartResult launchSimulation(
+      Simulation simulation,
+      Map<String, String> systemProperties,
+      String configuredSimulationClass,
+      List<String> discoveredSimulationClasses)
+      throws EnterprisePluginException {
     final String className =
         chooseClassName(simulation, configuredSimulationClass, discoveredSimulationClasses);
 
