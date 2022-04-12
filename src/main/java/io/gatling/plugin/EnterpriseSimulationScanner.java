@@ -18,7 +18,10 @@ package io.gatling.plugin;
 
 import io.gatling.plugin.exceptions.EnterprisePluginException;
 import io.gatling.plugin.exceptions.SimulationScannerIOException;
+import io.gatling.plugin.exceptions.UnsupportedJavaVersionException;
 import io.gatling.scanner.AsmSimulationScanner;
+import io.gatling.scanner.UnsupportedJavaMajorVersionException;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -36,6 +39,8 @@ class EnterpriseSimulationScanner {
       return AsmSimulationScanner.simulationFullyQualifiedNamesFromFile(file);
     } catch (IOException e) {
       throw new SimulationScannerIOException(file, e);
+    } catch (UnsupportedJavaMajorVersionException e) {
+      throw new UnsupportedJavaVersionException(e);
     }
   }
 }
