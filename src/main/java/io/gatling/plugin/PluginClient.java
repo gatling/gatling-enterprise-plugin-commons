@@ -16,12 +16,18 @@
 
 package io.gatling.plugin;
 
+import static io.gatling.plugin.EnterpriseSimulationScanner.simulationFullyQualifiedNamesFromFile;
 import static io.gatling.plugin.util.ObjectsUtil.nonNullParam;
 
 import io.gatling.plugin.client.EnterpriseClient;
 import io.gatling.plugin.exceptions.EnterprisePluginException;
+import io.gatling.plugin.exceptions.UnsupportedJavaVersionException;
 import io.gatling.plugin.io.PluginLogger;
+import io.gatling.plugin.model.ServerInformation;
+import io.gatling.scanner.HighestJavaVersionClass;
+import io.gatling.scanner.SimulationScanResult;
 import java.io.File;
+import java.util.List;
 import java.util.UUID;
 
 abstract class PluginClient implements AutoCloseable {
@@ -44,6 +50,23 @@ abstract class PluginClient implements AutoCloseable {
       logger.info("Package uploaded");
     }
     return file.length();
+  }
+
+  protected void checkSimulationByteCodeCompatibility(
+      HighestJavaVersionClass highestJavaVersionClass) throws EnterprisePluginException {
+    final ServerInformation serverInformation = enterpriseClient.getServerInformation();
+    final int maximumJavaVersion = Integer.parseInt(serverInformation.versions.java.max);
+    if (highestJavaVersionClass.javaVersion > maximumJavaVersion) {
+      throw new UnsupportedJavaVersionException(
+          highestJavaVersionClass.clazz, highestJavaVersionClass.javaVersion, maximumJavaVersion);
+    }
+  }
+
+  protected List<String> simulationClassesFromCompatibleByteCodeFile(File file)
+      throws EnterprisePluginException {
+    final SimulationScanResult scanResult = simulationFullyQualifiedNamesFromFile(file);
+    checkSimulationByteCodeCompatibility(scanResult.getHighestJavaVersionClass());
+    return scanResult.getSimulationClasses();
   }
 
   @Override

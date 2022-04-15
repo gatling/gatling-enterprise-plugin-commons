@@ -36,6 +36,8 @@ import java.util.UUID;
  */
 public interface EnterpriseClient extends AutoCloseable {
 
+  ServerInformation getServerInformation() throws EnterprisePluginException;
+
   List<Simulation> getSimulations() throws EnterprisePluginException;
 
   Simulation getSimulation(UUID simulationId) throws EnterprisePluginException;

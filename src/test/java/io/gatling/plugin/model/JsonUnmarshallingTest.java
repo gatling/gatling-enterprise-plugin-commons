@@ -128,4 +128,13 @@ public class JsonUnmarshallingTest {
             "/#/simulations/reports/34c8716e-00bd-48dc-a28d-0568e9aa9622");
     assertEquals(expected, actual);
   }
+
+  @Test
+  public void ServerInformation_unmarshall() throws JsonProcessingException {
+    final String json = "{\"versions\":{\"java\":{\"max\":\"17\"}}}";
+    final ServerInformation actual = JSON_MAPPER.readValue(json, ServerInformation.class);
+    final ServerInformation expected =
+        new ServerInformation(new Versions(new VersionSupported(null, "17")));
+    assertEquals(expected, actual);
+  }
 }

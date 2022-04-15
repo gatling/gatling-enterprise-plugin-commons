@@ -34,6 +34,7 @@ public final class OkHttpEnterpriseClient implements EnterpriseClient {
   private static final MeaningfulTimeWindow DEFAULT_TIME_WINDOW = new MeaningfulTimeWindow(0, 0);
 
   private final OkHttpClient okHttpClient;
+  private final InfoApiRequests infoApiRequests;
   private final PrivateApiRequests privateApiRequests;
   private final PackagesApiRequests packagesApiRequests;
   private final PoolsApiRequests poolsApiRequests;
@@ -49,6 +50,7 @@ public final class OkHttpEnterpriseClient implements EnterpriseClient {
     }
 
     okHttpClient = new OkHttpClient();
+    infoApiRequests = new InfoApiRequests(okHttpClient, httpUrl, token);
     privateApiRequests = new PrivateApiRequests(okHttpClient, httpUrl, token);
     packagesApiRequests = new PackagesApiRequests(okHttpClient, httpUrl, token);
     poolsApiRequests = new PoolsApiRequests(okHttpClient, httpUrl, token);
@@ -60,6 +62,11 @@ public final class OkHttpEnterpriseClient implements EnterpriseClient {
       close();
       throw e;
     }
+  }
+
+  @Override
+  public ServerInformation getServerInformation() throws EnterprisePluginException {
+    return infoApiRequests.getServerInformation();
   }
 
   @Override
