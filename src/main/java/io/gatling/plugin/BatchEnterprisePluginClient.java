@@ -24,9 +24,12 @@ import io.gatling.plugin.client.EnterpriseClient;
 import io.gatling.plugin.exceptions.*;
 import io.gatling.plugin.io.PluginLogger;
 import io.gatling.plugin.model.*;
-import io.gatling.plugin.model.Pkg;
+import io.gatling.scanner.SimulationScanResult;
 import java.io.File;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 public final class BatchEnterprisePluginClient extends PluginClient
     implements BatchEnterprisePlugin {
@@ -39,6 +42,8 @@ public final class BatchEnterprisePluginClient extends PluginClient
   public long uploadPackage(UUID packageId, File file) throws EnterprisePluginException {
     nonNullParam(packageId, "packageId");
     nonNullParam(file, "file");
+    final SimulationScanResult scanResult = simulationFullyQualifiedNamesFromFile(file);
+    checkSimulationByteCodeCompatibility(scanResult.getHighestJavaVersionClass());
     return uploadPackageWithChecksum(packageId, file);
   }
 
@@ -48,7 +53,7 @@ public final class BatchEnterprisePluginClient extends PluginClient
     nonNullParam(file, "simulationId");
     nonNullParam(file, "file");
     Simulation simulation = enterpriseClient.getSimulation(simulationId);
-    return enterpriseClient.uploadPackageWithChecksum(simulation.pkgId, file);
+    return uploadPackage(simulation.pkgId, file);
   }
 
   @Override
@@ -60,9 +65,12 @@ public final class BatchEnterprisePluginClient extends PluginClient
     nonNullParam(file, "file");
 
     final Simulation simulation = enterpriseClient.getSimulation(simulationId);
-    uploadPackageWithChecksum(simulation.pkgId, file);
+    final List<String> discoveredSimulationClasses =
+        simulationClassesFromCompatibleByteCodeFile(file);
+    String className =
+        simulationClassName(simulation, discoveredSimulationClasses, simulationClass);
 
-    String className = simulationClassName(simulation, file, simulationClass);
+    uploadPackageWithChecksum(simulation.pkgId, file);
 
     if (!simulation.className.equals(className)) {
       logger.info(
@@ -88,7 +96,9 @@ public final class BatchEnterprisePluginClient extends PluginClient
       throws EnterprisePluginException {
     nonEmptyParam(artifactId, "artifactId");
 
-    final String className = simulationClassName(null, file, simulationClass);
+    final List<String> discoveredSimulationClasses =
+        simulationClassesFromCompatibleByteCodeFile(file);
+    String className = simulationClassName(null, discoveredSimulationClasses, simulationClass);
     final Team team = defaultTeam(teamId);
     final Pkg pkg =
         packageId != null
@@ -159,10 +169,9 @@ public final class BatchEnterprisePluginClient extends PluginClient
     }
   }
 
-  private String simulationClassName(Simulation simulation, File file, String simulationClass)
+  private String simulationClassName(
+      Simulation simulation, List<String> discoveredSimulationClasses, String simulationClass)
       throws EnterprisePluginException {
-    final List<String> discoveredSimulationClasses = simulationFullyQualifiedNamesFromFile(file);
-
     if (discoveredSimulationClasses.isEmpty()) {
       throw new NoSimulationClassNameFoundException();
     } else if (simulationClass != null) {

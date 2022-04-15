@@ -16,7 +16,6 @@
 
 package io.gatling.plugin;
 
-import static io.gatling.plugin.EnterpriseSimulationScanner.simulationFullyQualifiedNamesFromFile;
 import static io.gatling.plugin.util.ObjectsUtil.nonNullParam;
 
 import io.gatling.plugin.client.EnterpriseClient;
@@ -53,11 +52,11 @@ public final class InteractiveEnterprisePluginClient extends PluginClient
     nonNullParam(file, "file");
 
     final Simulation simulation = enterpriseClient.getSimulation(simulationId);
-    final List<String> simulationClasses = simulationFullyQualifiedNamesFromFile(file);
+    List<String> discoveredSimulationClasses = simulationClassesFromCompatibleByteCodeFile(file);
 
     uploadPackageWithChecksum(simulation.pkgId, file);
     return launchSimulation(
-        simulation, systemProperties, configuredSimulationClass, simulationClasses);
+        simulation, systemProperties, configuredSimulationClass, discoveredSimulationClasses);
   }
 
   public SimulationStartResult createAndStartSimulation(
@@ -72,8 +71,7 @@ public final class InteractiveEnterprisePluginClient extends PluginClient
     nonNullParam(systemProperties, "systemProperties");
     nonNullParam(file, "file");
 
-    List<String> discoveredSimulationClasses =
-        EnterpriseSimulationScanner.simulationFullyQualifiedNamesFromFile(file);
+    List<String> discoveredSimulationClasses = simulationClassesFromCompatibleByteCodeFile(file);
 
     List<Simulation> simulations = enterpriseClient.getSimulations();
     boolean createSimulation = simulations.isEmpty() || chooseIfCreateSimulation();
