@@ -26,7 +26,7 @@ lazy val root = (project in file("."))
       "net.aichler"                % "jupiter-interface"    % JupiterKeys.jupiterVersion.value % Test,
       "com.squareup.okhttp3"       % "mockwebserver"        % okHttp3Version                   % Test,
       "com.squareup.okhttp3"       % "okhttp"               % okHttp3Version,
-      "com.fasterxml.jackson.core" % "jackson-databind"     % "2.13.2.2",
+      "com.fasterxml.jackson.core" % "jackson-databind"     % "2.13.3",
       "org.apache.commons"         % "commons-exec"         % "1.3",
       "io.gatling"                 % "gatling-scanner"      % "1.1.0"
     ),
