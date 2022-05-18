@@ -150,7 +150,6 @@ public final class OkHttpEnterpriseClient implements EnterpriseClient {
             teamId,
             className,
             pkgId,
-            /* jvmOptions */ null,
             DEFAULT_SYSTEM_PROPERTIES,
             /* ignoreGlobalProperties */ false,
             DEFAULT_TIME_WINDOW,

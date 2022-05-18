@@ -38,7 +38,6 @@ public final class SimulationCreationPayload {
   @JsonSerialize(using = PkgIdJsonSerializer.class)
   public final UUID pkgId;
 
-  public final String jvmOptions;
   public final Map<String, String> systemProperties;
   public final boolean ignoreGlobalProperties;
   public final MeaningfulTimeWindow meaningfulTimeWindow;
@@ -51,7 +50,6 @@ public final class SimulationCreationPayload {
       UUID teamId,
       String className,
       UUID pkgId,
-      String jvmOptions,
       Map<String, String> systemProperties,
       boolean ignoreGlobalProperties,
       MeaningfulTimeWindow meaningfulTimeWindow,
@@ -70,7 +68,6 @@ public final class SimulationCreationPayload {
     this.teamId = teamId;
     this.className = className;
     this.pkgId = pkgId;
-    this.jvmOptions = jvmOptions;
     this.systemProperties = systemProperties;
     this.ignoreGlobalProperties = ignoreGlobalProperties;
     this.meaningfulTimeWindow = meaningfulTimeWindow;
@@ -91,7 +88,6 @@ public final class SimulationCreationPayload {
         && teamId.equals(that.teamId)
         && className.equals(that.className)
         && pkgId.equals(that.pkgId)
-        && Objects.equals(jvmOptions, that.jvmOptions)
         && systemProperties.equals(that.systemProperties)
         && meaningfulTimeWindow.equals(that.meaningfulTimeWindow)
         && hostsByPool.equals(that.hostsByPool);
@@ -104,7 +100,6 @@ public final class SimulationCreationPayload {
         teamId,
         className,
         pkgId,
-        jvmOptions,
         systemProperties,
         ignoreGlobalProperties,
         meaningfulTimeWindow,

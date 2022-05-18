@@ -57,7 +57,6 @@ public class JsonMarshallingTest {
             UUID.fromString("2bc38879-6dd1-461d-a8fd-47df4991fd9b"),
             "my.package.MyGatlingSimulation",
             UUID.fromString("0cf26226-b261-4af6-a52a-1fec36f4394a"),
-            /* jvmOptions */ null,
             systemProperties,
             /* ignoreGlobalProperties */ false,
             new MeaningfulTimeWindow(5, 10),
