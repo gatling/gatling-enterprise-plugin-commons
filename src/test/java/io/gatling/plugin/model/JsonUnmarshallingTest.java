@@ -89,7 +89,7 @@ public class JsonUnmarshallingTest {
   @Test
   public void Simulations_unmarshall() throws JsonProcessingException {
     final String json =
-        "{\"data\":[{\"id\":\"92634bbd-a88b-4c45-8968-756055e19e5b\",\"teamId\":\"2bc38879-6dd1-461d-a8fd-47df4991fd9b\",\"name\":\"My Gatling Simulation\",\"className\":\"my.package.MyGatlingSimulation\",\"build\":{\"pkgId\":\"0cf26226-b261-4af6-a52a-1fec36f4394a\"},\"jvmOptions\":\"string\",\"systemProperties\":{},\"ignoreGlobalProperties\":true,\"meaningfulTimeWindow\":{\"rampUp\":0,\"rampDown\":0},\"hostsByPool\":{\"poolId\":{\"size\":0,\"weight\":0}},\"usePoolWeights\":true,\"usePoolDedicatedIps\":true}]}";
+        "{\"data\":[{\"id\":\"92634bbd-a88b-4c45-8968-756055e19e5b\",\"teamId\":\"2bc38879-6dd1-461d-a8fd-47df4991fd9b\",\"name\":\"My Gatling Simulation\",\"className\":\"my.package.MyGatlingSimulation\",\"build\":{\"pkgId\":\"0cf26226-b261-4af6-a52a-1fec36f4394a\"},\"systemProperties\":{},\"ignoreGlobalProperties\":true,\"meaningfulTimeWindow\":{\"rampUp\":0,\"rampDown\":0},\"hostsByPool\":{\"poolId\":{\"size\":0,\"weight\":0}},\"usePoolWeights\":true,\"usePoolDedicatedIps\":true}]}";
     final Simulations actual = JSON_MAPPER.readValue(json, Simulations.class);
     final Simulations expected =
         new Simulations(
