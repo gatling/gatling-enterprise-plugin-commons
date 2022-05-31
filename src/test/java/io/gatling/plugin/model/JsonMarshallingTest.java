@@ -48,6 +48,9 @@ public class JsonMarshallingTest {
     final Map<String, String> systemProperties = new HashMap<>();
     systemProperties.put("key_1", "First Value");
     systemProperties.put("key_2", "Second Value");
+    final Map<String, String> environmentVariables = new HashMap<>();
+    environmentVariables.put("keyA", "valueA");
+    environmentVariables.put("keyB", "valueB");
     final Map<UUID, HostByPool> hostsByPool = new HashMap<>();
     hostsByPool.put(UUID.fromString("b2a567f7-07f1-4de7-857a-2e0450b73377"), new HostByPool(1, 25));
     hostsByPool.put(UUID.fromString("43d47d5e-86c3-4918-b047-caf7fb1f1f71"), new HostByPool(2, 75));
@@ -58,6 +61,7 @@ public class JsonMarshallingTest {
             "my.package.MyGatlingSimulation",
             UUID.fromString("0cf26226-b261-4af6-a52a-1fec36f4394a"),
             systemProperties,
+            environmentVariables,
             /* ignoreGlobalProperties */ false,
             new MeaningfulTimeWindow(5, 10),
             hostsByPool,
@@ -65,7 +69,7 @@ public class JsonMarshallingTest {
             /* usePoolDedicatedIps */ false);
     final String actual = JSON_MAPPER.writeValueAsString(simulation);
     final String expected =
-        "{\"name\":\"My Gatling Simulation\",\"teamId\":\"2bc38879-6dd1-461d-a8fd-47df4991fd9b\",\"className\":\"my.package.MyGatlingSimulation\",\"systemProperties\":{\"key_2\":\"Second Value\",\"key_1\":\"First Value\"},\"ignoreGlobalProperties\":false,\"meaningfulTimeWindow\":{\"rampUp\":5,\"rampDown\":10},\"hostsByPool\":{\"b2a567f7-07f1-4de7-857a-2e0450b73377\":{\"size\":1,\"weight\":25},\"43d47d5e-86c3-4918-b047-caf7fb1f1f71\":{\"size\":2,\"weight\":75}},\"usePoolWeights\":true,\"usePoolDedicatedIps\":false,\"build\":{\"pkgId\":\"0cf26226-b261-4af6-a52a-1fec36f4394a\"}}";
+        "{\"name\":\"My Gatling Simulation\",\"teamId\":\"2bc38879-6dd1-461d-a8fd-47df4991fd9b\",\"className\":\"my.package.MyGatlingSimulation\",\"systemProperties\":{\"key_2\":\"Second Value\",\"key_1\":\"First Value\"},\"environmentVariables\":{\"keyA\":\"valueA\",\"keyB\":\"valueB\"},\"ignoreGlobalProperties\":false,\"meaningfulTimeWindow\":{\"rampUp\":5,\"rampDown\":10},\"hostsByPool\":{\"b2a567f7-07f1-4de7-857a-2e0450b73377\":{\"size\":1,\"weight\":25},\"43d47d5e-86c3-4918-b047-caf7fb1f1f71\":{\"size\":2,\"weight\":75}},\"usePoolWeights\":true,\"usePoolDedicatedIps\":false,\"build\":{\"pkgId\":\"0cf26226-b261-4af6-a52a-1fec36f4394a\"}}";
     assertEquals(expected, actual);
   }
 }

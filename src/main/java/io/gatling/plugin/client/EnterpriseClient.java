@@ -60,9 +60,13 @@ public interface EnterpriseClient extends AutoCloseable {
   /**
    * @param simulationId Required
    * @param systemProperties Required (can be an empty map)
+   * @param environmentVariables Required (can be an empty map)
    * @throws SimulationStartException when start failed for any reason
    */
-  RunSummary startSimulation(UUID simulationId, Map<String, String> systemProperties)
+  RunSummary startSimulation(
+      UUID simulationId,
+      Map<String, String> systemProperties,
+      Map<String, String> environmentVariables)
       throws EnterprisePluginException;
 
   /**

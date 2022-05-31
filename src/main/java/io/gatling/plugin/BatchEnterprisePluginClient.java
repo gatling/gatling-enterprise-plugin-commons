@@ -58,10 +58,15 @@ public final class BatchEnterprisePluginClient extends PluginClient
 
   @Override
   public SimulationStartResult uploadPackageAndStartSimulation(
-      UUID simulationId, Map<String, String> systemProperties, String simulationClass, File file)
+      UUID simulationId,
+      Map<String, String> systemProperties,
+      Map<String, String> environmentVariables,
+      String simulationClass,
+      File file)
       throws EnterprisePluginException {
     nonNullParam(simulationId, "simulationId");
     nonNullParam(systemProperties, "systemProperties");
+    nonNullParam(environmentVariables, "environmentVariables");
     nonNullParam(file, "file");
 
     final Simulation simulation = enterpriseClient.getSimulation(simulationId);
@@ -80,7 +85,8 @@ public final class BatchEnterprisePluginClient extends PluginClient
       enterpriseClient.updateSimulationClassName(simulation.id, className);
     }
 
-    final RunSummary runSummary = enterpriseClient.startSimulation(simulationId, systemProperties);
+    final RunSummary runSummary =
+        enterpriseClient.startSimulation(simulationId, systemProperties, environmentVariables);
     return new SimulationStartResult(simulation, runSummary, false);
   }
 
@@ -92,6 +98,7 @@ public final class BatchEnterprisePluginClient extends PluginClient
       String simulationClass,
       UUID packageId,
       Map<String, String> systemProperties,
+      Map<String, String> environmentVariables,
       File file)
       throws EnterprisePluginException {
     nonEmptyParam(artifactId, "artifactId");
@@ -105,7 +112,8 @@ public final class BatchEnterprisePluginClient extends PluginClient
             ? enterpriseClient.getPackage(packageId)
             : createAndUploadDefaultPackage(team, groupId, artifactId, file);
     final Map<UUID, HostByPool> hostsByPool = defaultHostByPool();
-    return createAndStartSimulation(team, pkg, className, hostsByPool, systemProperties);
+    return createAndStartSimulation(
+        team, pkg, className, hostsByPool, systemProperties, environmentVariables);
   }
 
   private Team defaultTeam(UUID teamId) throws EnterprisePluginException {
@@ -153,7 +161,8 @@ public final class BatchEnterprisePluginClient extends PluginClient
       Pkg pkg,
       String className,
       Map<UUID, HostByPool> hostsByPool,
-      Map<String, String> systemProperties)
+      Map<String, String> systemProperties,
+      Map<String, String> environmentVariables)
       throws EnterprisePluginException {
     final String[] classNameParts = className.split("\\.");
     final String simulationName = classNameParts[classNameParts.length - 1];
@@ -162,7 +171,7 @@ public final class BatchEnterprisePluginClient extends PluginClient
         enterpriseClient.createSimulation(simulationName, team.id, className, pkg.id, hostsByPool);
     try {
       final RunSummary runSummary =
-          enterpriseClient.startSimulation(simulation.id, systemProperties);
+          enterpriseClient.startSimulation(simulation.id, systemProperties, environmentVariables);
       return new SimulationStartResult(simulation, runSummary, true);
     } catch (EnterprisePluginException e) {
       throw new SimulationStartException(simulation, true, e);
