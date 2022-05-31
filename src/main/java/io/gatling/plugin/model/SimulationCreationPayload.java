@@ -40,6 +40,7 @@ public final class SimulationCreationPayload {
 
   public final String jvmOptions;
   public final Map<String, String> systemProperties;
+  public final Map<String, String> environmentVariables;
   public final boolean ignoreGlobalProperties;
   public final MeaningfulTimeWindow meaningfulTimeWindow;
   public final Map<UUID, HostByPool> hostsByPool;
@@ -53,6 +54,7 @@ public final class SimulationCreationPayload {
       UUID pkgId,
       String jvmOptions,
       Map<String, String> systemProperties,
+      Map<String, String> environmentVariables,
       boolean ignoreGlobalProperties,
       MeaningfulTimeWindow meaningfulTimeWindow,
       Map<UUID, HostByPool> hostsByPool,
@@ -63,6 +65,7 @@ public final class SimulationCreationPayload {
     nonNullParam(className, "className");
     nonNullParam(pkgId, "pkgId");
     nonNullParam(systemProperties, "systemProperties");
+    nonNullParam(environmentVariables, "environmentVariables");
     nonNullParam(meaningfulTimeWindow, "meaningfulTimeWindow");
     nonNullParam(hostsByPool, "hostsByPool");
 
@@ -72,6 +75,7 @@ public final class SimulationCreationPayload {
     this.pkgId = pkgId;
     this.jvmOptions = jvmOptions;
     this.systemProperties = systemProperties;
+    this.environmentVariables = environmentVariables;
     this.ignoreGlobalProperties = ignoreGlobalProperties;
     this.meaningfulTimeWindow = meaningfulTimeWindow;
     this.hostsByPool = hostsByPool;
@@ -93,6 +97,7 @@ public final class SimulationCreationPayload {
         && pkgId.equals(that.pkgId)
         && Objects.equals(jvmOptions, that.jvmOptions)
         && systemProperties.equals(that.systemProperties)
+        && environmentVariables.equals(that.environmentVariables)
         && meaningfulTimeWindow.equals(that.meaningfulTimeWindow)
         && hostsByPool.equals(that.hostsByPool);
   }
@@ -106,6 +111,7 @@ public final class SimulationCreationPayload {
         pkgId,
         jvmOptions,
         systemProperties,
+        environmentVariables,
         ignoreGlobalProperties,
         meaningfulTimeWindow,
         hostsByPool,

@@ -26,22 +26,36 @@ import java.util.Objects;
 public class StartOptions {
 
   public final Map<String, String> extraSystemProperties;
+  public final Map<String, String> extraEnvironmentVariables;
 
   @JsonCreator
   public StartOptions(
       @JsonProperty(value = "extraSystemProperties", required = true)
-          Map<String, String> extraSystemProperties) {
+          Map<String, String> extraSystemProperties,
+      @JsonProperty(value = "extraEnvironmentVariables", required = true)
+          Map<String, String> extraEnvironmentVariables) {
     nonNullParam(extraSystemProperties, "extraSystemProperties");
+    nonNullParam(extraEnvironmentVariables, "extraEnvironmentVariables");
     this.extraSystemProperties = extraSystemProperties;
+    this.extraEnvironmentVariables = extraEnvironmentVariables;
   }
 
   public Map<String, String> getExtraSystemProperties() {
     return extraSystemProperties;
   }
 
+  public Map<String, String> getExtraEnvironmentVariables() {
+    return extraEnvironmentVariables;
+  }
+
   @Override
   public String toString() {
-    return "StartOptions{" + "extraSystemProperties=" + extraSystemProperties + '}';
+    return "StartOptions{"
+        + "extraSystemProperties="
+        + extraSystemProperties
+        + ", extraEnvironmentVariables="
+        + extraEnvironmentVariables
+        + '}';
   }
 
   @Override
@@ -49,11 +63,12 @@ public class StartOptions {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     StartOptions that = (StartOptions) o;
-    return Objects.equals(extraSystemProperties, that.extraSystemProperties);
+    return Objects.equals(extraSystemProperties, that.extraSystemProperties)
+        && Objects.equals(extraEnvironmentVariables, that.extraEnvironmentVariables);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(extraSystemProperties);
+    return Objects.hash(extraSystemProperties, extraEnvironmentVariables);
   }
 }

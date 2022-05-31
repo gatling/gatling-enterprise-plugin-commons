@@ -42,6 +42,7 @@ public interface EnterprisePlugin extends AutoCloseable {
    *
    * @param simulationId Required
    * @param systemProperties Required, can be an empty map
+   * @param environmentVariables Required, can be an empty map
    * @param simulationClass Optional, override simulation configured class name for next run
    * @param file Required, Path to the packaged JAR file to upload and run
    * @throws SimulationNotFoundException if the simulationId does not exist
@@ -49,7 +50,11 @@ public interface EnterprisePlugin extends AutoCloseable {
    *     has not been discovered
    */
   SimulationStartResult uploadPackageAndStartSimulation(
-      UUID simulationId, Map<String, String> systemProperties, String simulationClass, File file)
+      UUID simulationId,
+      Map<String, String> systemProperties,
+      Map<String, String> environmentVariables,
+      String simulationClass,
+      File file)
       throws EnterprisePluginException;
 
   /**
@@ -60,7 +65,8 @@ public interface EnterprisePlugin extends AutoCloseable {
    * @param artifactId Required
    * @param simulationClass Optional
    * @param packageId Optional
-   * @param systemProperties Required, can be an empty Map
+   * @param systemProperties Required, can be an empty map
+   * @param environmentVariables Required, can be an empty map
    * @param file Required
    * @throws SimulationStartException if simulation start failed after creation
    * @throws SeveralTeamsFoundException if teamId is null and there's more than one team discovered
@@ -75,6 +81,7 @@ public interface EnterprisePlugin extends AutoCloseable {
       String simulationClass,
       UUID packageId,
       Map<String, String> systemProperties,
+      Map<String, String> environmentVariables,
       File file)
       throws EnterprisePluginException;
 }

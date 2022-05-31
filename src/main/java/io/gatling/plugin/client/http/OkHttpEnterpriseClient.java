@@ -31,6 +31,7 @@ import okhttp3.*;
 public final class OkHttpEnterpriseClient implements EnterpriseClient {
 
   private static final Map<String, String> DEFAULT_SYSTEM_PROPERTIES = Collections.emptyMap();
+  private static final Map<String, String> DEFAULT_ENVIRONMENT_VARIABLES = Collections.emptyMap();
   private static final MeaningfulTimeWindow DEFAULT_TIME_WINDOW = new MeaningfulTimeWindow(0, 0);
 
   private final OkHttpClient okHttpClient;
@@ -105,10 +106,13 @@ public final class OkHttpEnterpriseClient implements EnterpriseClient {
   }
 
   @Override
-  public RunSummary startSimulation(UUID simulationId, Map<String, String> systemProperties)
+  public RunSummary startSimulation(
+      UUID simulationId,
+      Map<String, String> systemProperties,
+      Map<String, String> environmentVariables)
       throws EnterprisePluginException {
 
-    final StartOptions options = new StartOptions(systemProperties);
+    final StartOptions options = new StartOptions(systemProperties, environmentVariables);
 
     return simulationsApiRequests.startSimulation(simulationId, options);
   }
@@ -152,6 +156,7 @@ public final class OkHttpEnterpriseClient implements EnterpriseClient {
             pkgId,
             /* jvmOptions */ null,
             DEFAULT_SYSTEM_PROPERTIES,
+            DEFAULT_ENVIRONMENT_VARIABLES,
             /* ignoreGlobalProperties */ false,
             DEFAULT_TIME_WINDOW,
             hostsByPool,

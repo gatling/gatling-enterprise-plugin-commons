@@ -44,11 +44,13 @@ public final class InteractiveEnterprisePluginClient extends PluginClient
   public SimulationStartResult uploadPackageAndStartSimulation(
       UUID simulationId,
       Map<String, String> systemProperties,
+      Map<String, String> environmentVariables,
       String configuredSimulationClass,
       File file)
       throws EnterprisePluginException {
     nonNullParam(simulationId, "simulationId");
     nonNullParam(systemProperties, "systemProperties");
+    nonNullParam(environmentVariables, "environmentVariables");
     nonNullParam(file, "file");
 
     final Simulation simulation = enterpriseClient.getSimulation(simulationId);
@@ -56,7 +58,11 @@ public final class InteractiveEnterprisePluginClient extends PluginClient
 
     uploadPackageWithChecksum(simulation.pkgId, file);
     return launchSimulation(
-        simulation, systemProperties, configuredSimulationClass, discoveredSimulationClasses);
+        simulation,
+        systemProperties,
+        environmentVariables,
+        configuredSimulationClass,
+        discoveredSimulationClasses);
   }
 
   public SimulationStartResult createAndStartSimulation(
@@ -66,9 +72,11 @@ public final class InteractiveEnterprisePluginClient extends PluginClient
       String configuredSimulationClass,
       UUID configuredPackageId,
       Map<String, String> systemProperties,
+      Map<String, String> environmentVariables,
       File file)
       throws EnterprisePluginException {
     nonNullParam(systemProperties, "systemProperties");
+    nonNullParam(environmentVariables, "environmentVariables");
     nonNullParam(file, "file");
 
     List<String> discoveredSimulationClasses = simulationClassesFromCompatibleByteCodeFile(file);
@@ -86,7 +94,8 @@ public final class InteractiveEnterprisePluginClient extends PluginClient
           configuredPackageId,
           file,
           simulations,
-          systemProperties);
+          systemProperties,
+          environmentVariables);
     } else {
 
       if (simulations.isEmpty()) {
@@ -100,6 +109,7 @@ public final class InteractiveEnterprisePluginClient extends PluginClient
           simulation,
           file,
           systemProperties,
+          environmentVariables,
           configuredSimulationClass,
           discoveredSimulationClasses);
     }
@@ -117,6 +127,7 @@ public final class InteractiveEnterprisePluginClient extends PluginClient
       Simulation simulation,
       File packageFile,
       Map<String, String> systemProperties,
+      Map<String, String> environmentVariables,
       String configuredSimulationClass,
       List<String> discoveredSimulationClasses)
       throws EnterprisePluginException, EmptyChoicesException {
@@ -125,12 +136,17 @@ public final class InteractiveEnterprisePluginClient extends PluginClient
     uploadPackageWithChecksum(simulation.pkgId, packageFile);
 
     return launchSimulation(
-        simulation, systemProperties, configuredSimulationClass, discoveredSimulationClasses);
+        simulation,
+        systemProperties,
+        environmentVariables,
+        configuredSimulationClass,
+        discoveredSimulationClasses);
   }
 
   private SimulationStartResult launchSimulation(
       Simulation simulation,
       Map<String, String> systemProperties,
+      Map<String, String> environmentVariables,
       String configuredSimulationClass,
       List<String> discoveredSimulationClasses)
       throws EnterprisePluginException {
@@ -142,7 +158,7 @@ public final class InteractiveEnterprisePluginClient extends PluginClient
       enterpriseClient.updateSimulationClassName(simulation.id, className);
     }
 
-    return startSimulation(simulation, systemProperties, className, false);
+    return startSimulation(simulation, systemProperties, environmentVariables, className, false);
   }
 
   /**
@@ -164,7 +180,8 @@ public final class InteractiveEnterprisePluginClient extends PluginClient
       UUID configuredPackageId,
       File packageFile,
       List<Simulation> existingSimulations,
-      Map<String, String> systemProperties)
+      Map<String, String> systemProperties,
+      Map<String, String> environmentVariables)
       throws EnterprisePluginException, EmptyChoicesException {
     logger.info("Proceeding to the create simulation step");
     String className =
@@ -182,19 +199,21 @@ public final class InteractiveEnterprisePluginClient extends PluginClient
     Simulation simulation =
         enterpriseClient.createSimulation(simulationName, team.id, className, pkg.id, hostsByPool);
 
-    return startSimulation(simulation, systemProperties, className, true);
+    return startSimulation(simulation, systemProperties, environmentVariables, className, true);
   }
 
   // TODO: custom pools from configuration, MISC-313
   private SimulationStartResult startSimulation(
       Simulation simulation,
       Map<String, String> systemProperties,
+      Map<String, String> environmentVariables,
       String className,
       boolean created)
       throws SimulationStartException {
     try {
       logger.info("Start simulation using simulation class name: " + className);
-      RunSummary runSummary = enterpriseClient.startSimulation(simulation.id, systemProperties);
+      RunSummary runSummary =
+          enterpriseClient.startSimulation(simulation.id, systemProperties, environmentVariables);
       return new SimulationStartResult(simulation, runSummary, created);
     } catch (EnterprisePluginException e) {
       throw new SimulationStartException(simulation, created, e);
