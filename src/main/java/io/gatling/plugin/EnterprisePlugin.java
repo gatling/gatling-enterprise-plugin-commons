@@ -35,7 +35,7 @@ import java.util.UUID;
  *   <li>{@link InvalidApiCallException}: invalid input data
  * </ul>
  */
-public interface EnterprisePlugin extends AutoCloseable {
+public interface EnterprisePlugin {
 
   /**
    * Upload file to the package configured on the given simulation ID, and start the simulation

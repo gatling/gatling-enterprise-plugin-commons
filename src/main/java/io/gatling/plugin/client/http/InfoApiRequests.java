@@ -18,19 +18,14 @@ package io.gatling.plugin.client.http;
 
 import io.gatling.plugin.exceptions.EnterprisePluginException;
 import io.gatling.plugin.model.ServerInformation;
-import okhttp3.HttpUrl;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
 
 public class InfoApiRequests extends AbstractApiRequests {
 
-  InfoApiRequests(OkHttpClient okHttpClient, HttpUrl url, String token) {
-    super(okHttpClient, url, token);
+  InfoApiRequests(String baseUrl, String token) {
+    super(baseUrl, token);
   }
 
   ServerInformation getServerInformation() throws EnterprisePluginException {
-    HttpUrl requestUrl = url.newBuilder().addPathSegment("info").build();
-    Request.Builder request = new Request.Builder().url(requestUrl).get();
-    return executeRequest(request, response -> readResponseJson(response, ServerInformation.class));
+    return getJson("/info", ServerInformation.class);
   }
 }
