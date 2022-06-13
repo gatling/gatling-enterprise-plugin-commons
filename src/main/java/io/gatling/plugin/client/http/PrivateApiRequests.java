@@ -19,36 +19,21 @@ package io.gatling.plugin.client.http;
 import io.gatling.plugin.exceptions.EnterprisePluginException;
 import io.gatling.plugin.exceptions.UnsupportedClientException;
 import java.net.HttpURLConnection;
-import okhttp3.HttpUrl;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
 
 class PrivateApiRequests extends AbstractApiRequests {
 
-  PrivateApiRequests(OkHttpClient okHttpClient, HttpUrl url, String token) {
-    super(okHttpClient, url, token);
+  PrivateApiRequests(String baseUrl, String token) {
+    super(baseUrl, token);
   }
 
   /** @throws UnsupportedClientException if this client version is outdated */
   void checkVersionSupport(String client, String version) throws EnterprisePluginException {
-    Request.Builder request = checkVersionSupportRequest(client, version);
-    executeRequest(
-        request,
-        response -> null,
+    get(
+        "/compatibility?clientName=" + urlEncode(client) + "&version=" + urlEncode(version),
         response -> {
-          if (response.code() == HttpURLConnection.HTTP_BAD_REQUEST) {
+          if (response.code == HttpURLConnection.HTTP_BAD_REQUEST) {
             throw new UnsupportedClientException(client, version);
           }
         });
-  }
-
-  private Request.Builder checkVersionSupportRequest(String client, String version) {
-    HttpUrl requestUrl =
-        url.newBuilder()
-            .addPathSegment("compatibility")
-            .addQueryParameter("clientName", client)
-            .addQueryParameter("version", version)
-            .build();
-    return new Request.Builder().url(requestUrl).get();
   }
 }

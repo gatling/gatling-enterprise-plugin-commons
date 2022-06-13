@@ -34,7 +34,7 @@ import java.util.UUID;
  *   <li>{@link InvalidApiCallException}: invalid input data
  * </ul>
  */
-public interface EnterpriseClient extends AutoCloseable {
+public interface EnterpriseClient {
 
   ServerInformation getServerInformation() throws EnterprisePluginException;
 

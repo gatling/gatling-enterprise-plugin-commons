@@ -26,43 +26,33 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.*;
-import okhttp3.*;
 
-public final class OkHttpEnterpriseClient implements EnterpriseClient {
+public final class HttpEnterpriseClient implements EnterpriseClient {
 
   private static final Map<String, String> DEFAULT_SYSTEM_PROPERTIES = Collections.emptyMap();
   private static final Map<String, String> DEFAULT_ENVIRONMENT_VARIABLES = Collections.emptyMap();
   private static final MeaningfulTimeWindow DEFAULT_TIME_WINDOW = new MeaningfulTimeWindow(0, 0);
 
-  private final OkHttpClient okHttpClient;
   private final InfoApiRequests infoApiRequests;
-  private final PrivateApiRequests privateApiRequests;
   private final PackagesApiRequests packagesApiRequests;
   private final PoolsApiRequests poolsApiRequests;
   private final SimulationsApiRequests simulationsApiRequests;
   private final TeamsApiRequests teamsApiRequests;
 
-  public OkHttpEnterpriseClient(URL url, String token, String client, String version)
+  public HttpEnterpriseClient(URL url, String token, String client, String version)
       throws EnterprisePluginException {
-    final HttpUrl httpUrl = HttpUrl.get(url);
-    if (httpUrl == null) {
-      throw new IllegalArgumentException(
-          String.format("'%s' is not a valid HTTP or HTTPS URL", url));
+    if (!"http".equals(url.getProtocol()) && !"https".equals(url.getProtocol())) {
+      throw new IllegalArgumentException("'" + url + "' is not a valid HTTP or HTTPS URL");
     }
+    final String baseUrl = url.toString();
 
-    okHttpClient = new OkHttpClient();
-    infoApiRequests = new InfoApiRequests(okHttpClient, httpUrl, token);
-    privateApiRequests = new PrivateApiRequests(okHttpClient, httpUrl, token);
-    packagesApiRequests = new PackagesApiRequests(okHttpClient, httpUrl, token);
-    poolsApiRequests = new PoolsApiRequests(okHttpClient, httpUrl, token);
-    simulationsApiRequests = new SimulationsApiRequests(okHttpClient, httpUrl, token);
-    teamsApiRequests = new TeamsApiRequests(okHttpClient, httpUrl, token);
-    try {
-      privateApiRequests.checkVersionSupport(client, version);
-    } catch (Exception e) {
-      close();
-      throw e;
-    }
+    infoApiRequests = new InfoApiRequests(baseUrl, token);
+    packagesApiRequests = new PackagesApiRequests(baseUrl, token);
+    poolsApiRequests = new PoolsApiRequests(baseUrl, token);
+    simulationsApiRequests = new SimulationsApiRequests(baseUrl, token);
+    teamsApiRequests = new TeamsApiRequests(baseUrl, token);
+
+    new PrivateApiRequests(baseUrl, token).checkVersionSupport(client, version);
   }
 
   @Override
@@ -166,12 +156,5 @@ public final class OkHttpEnterpriseClient implements EnterpriseClient {
   @Override
   public Pkg createPackage(String packageName, UUID teamId) throws EnterprisePluginException {
     return packagesApiRequests.createPackage(new PackageCreationPayload(packageName, teamId));
-  }
-
-  @Override
-  public void close() {
-    okHttpClient.connectionPool().evictAll();
-    okHttpClient.dispatcher().cancelAll();
-    okHttpClient.dispatcher().executorService().shutdown();
   }
 }

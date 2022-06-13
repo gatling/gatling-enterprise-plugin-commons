@@ -16,75 +16,63 @@
 
 package io.gatling.plugin.client.http;
 
+import io.gatling.plugin.exceptions.ApiCallIOException;
 import io.gatling.plugin.exceptions.EnterprisePluginException;
 import io.gatling.plugin.exceptions.InvalidApiCallException;
 import io.gatling.plugin.exceptions.PackageNotFoundException;
 import io.gatling.plugin.model.*;
 import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.nio.file.Files;
 import java.util.UUID;
-import okhttp3.HttpUrl;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
 
 class PackagesApiRequests extends AbstractApiRequests {
-
-  PackagesApiRequests(OkHttpClient okHttpClient, HttpUrl url, String token) {
-    super(okHttpClient, url, token);
+  PackagesApiRequests(String baseUrl, String token) {
+    super(baseUrl, token);
   }
 
   Packages listPackages() throws EnterprisePluginException {
-    HttpUrl requestUrl = url.newBuilder().addPathSegment("artifacts").build();
-    Request.Builder request = new Request.Builder().url(requestUrl).get();
-    return executeRequest(request, response -> readResponseJson(response, Packages.class));
+    return getJson("/artifacts", Packages.class);
   }
 
   Pkg readPackage(UUID packageId) throws EnterprisePluginException {
-    HttpUrl requestUrl =
-        url.newBuilder().addPathSegment("artifacts").addPathSegment(packageId.toString()).build();
-    Request.Builder request = new Request.Builder().url(requestUrl).get();
-    return executeRequest(
-        request,
-        response -> readResponseJson(response, Pkg.class),
+    return getJson(
+        "/artifacts/" + packageId.toString(),
+        Pkg.class,
         response -> {
-          if (response.code() == HttpURLConnection.HTTP_NOT_FOUND) {
+          if (response.code == HttpURLConnection.HTTP_NOT_FOUND) {
             throw new PackageNotFoundException(packageId);
           }
         });
   }
 
   Pkg createPackage(PackageCreationPayload pkg) throws EnterprisePluginException {
-    HttpUrl requestUrl = url.newBuilder().addPathSegment("artifacts").build();
-    RequestBody body = jsonRequestBody(pkg);
-    Request.Builder request = new Request.Builder().url(requestUrl).post(body);
-    return executeRequest(request, response -> readResponseJson(response, Pkg.class));
+    return postJson("/artifacts", pkg, Pkg.class);
   }
 
   long uploadPackage(UUID packageId, File file) throws EnterprisePluginException {
-    Request.Builder request = uploadPackageRequest(packageId, file);
     return executeRequest(
-        request,
+        HTTP_PUT_METHOD,
+        "/artifacts/" + packageId.toString() + "/content?filename=" + urlEncode(file.getName()),
+        connection -> {
+          connection.setRequestProperty(CONTENT_TYPE_HEADER, OCTET_STREAM_MEDIA_TYPE);
+          connection.setDoOutput(true);
+          try (final OutputStream os = connection.getOutputStream()) {
+            Files.copy(file.toPath(), os);
+          } catch (IOException e) {
+            throw new ApiCallIOException(e);
+          }
+        },
         response -> file.length(),
         response -> {
-          if (response.code() == HttpURLConnection.HTTP_ENTITY_TOO_LARGE) {
+          if (response.code == HttpURLConnection.HTTP_ENTITY_TOO_LARGE) {
             throw new InvalidApiCallException("Package exceeds maximum allowed size (5 GB)");
           }
-          if (response.code() == HttpURLConnection.HTTP_NOT_FOUND) {
+          if (response.code == HttpURLConnection.HTTP_NOT_FOUND) {
             throw new PackageNotFoundException(packageId);
           }
         });
-  }
-
-  private Request.Builder uploadPackageRequest(UUID artifactId, File file) {
-    HttpUrl requestUrl =
-        url.newBuilder()
-            .addPathSegment("artifacts")
-            .addPathSegment(artifactId.toString())
-            .addPathSegment("content")
-            .addQueryParameter("filename", file.getName())
-            .build();
-    RequestBody body = RequestBody.create(OCTET_STREAM_MEDIA_TYPE, file);
-    return new Request.Builder().url(requestUrl).put(body);
   }
 }

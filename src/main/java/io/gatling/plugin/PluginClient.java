@@ -30,7 +30,7 @@ import java.io.File;
 import java.util.List;
 import java.util.UUID;
 
-abstract class PluginClient implements AutoCloseable {
+abstract class PluginClient {
 
   protected final EnterpriseClient enterpriseClient;
   protected final PluginLogger logger;
@@ -67,10 +67,5 @@ abstract class PluginClient implements AutoCloseable {
     final SimulationScanResult scanResult = simulationFullyQualifiedNamesFromFile(file);
     checkSimulationByteCodeCompatibility(scanResult.getHighestJavaVersionClass());
     return scanResult.getSimulationClasses();
-  }
-
-  @Override
-  public void close() throws Exception {
-    enterpriseClient.close();
   }
 }
