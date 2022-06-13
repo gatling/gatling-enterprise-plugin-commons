@@ -22,10 +22,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 import io.gatling.plugin.exceptions.*;
+import io.gatling.plugin.util.LambdaExceptionUtil.*;
 import java.io.File;
 import java.net.HttpURLConnection;
-import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.Test;
@@ -37,65 +40,77 @@ public class HttpEnterpriseClientTest {
   private final File ARTIFACT_FILE =
       new File(getClass().getResource("/artifacts/maven-sample.jar").getPath());
 
-  private MockWebServer createMockWebServer(MockResponse... responses) {
-    MockWebServer server = new MockWebServer();
-    MockResponse clientSupportResponse =
-        new MockResponse().setResponseCode(HttpURLConnection.HTTP_OK);
-    server.enqueue(
-        clientSupportResponse); // okHttpEnterpriseClientMockWebServer getInstance checkVersion call
-    Arrays.stream(responses).forEach(server::enqueue);
-    return server;
+  private <T> T withMockWebServer(
+      MockResponse response,
+      BiFunctionWithExceptions<MockWebServer, HttpEnterpriseClient, T, Exception> testFunction)
+      throws Exception {
+    return withMockWebServer(Collections.singletonList(response), testFunction);
   }
 
-  private HttpEnterpriseClient createHttpEnterpriseClient(MockWebServer server) {
-    try {
+  private <T> T withMockWebServer(
+      List<MockResponse> responses,
+      BiFunctionWithExceptions<MockWebServer, HttpEnterpriseClient, T, Exception> testFunction)
+      throws Exception {
+    MockResponse clientSupportResponse =
+        new MockResponse().setResponseCode(HttpURLConnection.HTTP_OK);
+    try (MockWebServer server = new MockWebServer()) {
+      // The HTTP client's first call will always be the version check:
+      server.enqueue(clientSupportResponse);
+      responses.forEach(server::enqueue);
+      server.start();
       HttpEnterpriseClient client =
           new HttpEnterpriseClient(server.url("/").url(), "invalid", "client", "version");
-      server.takeRequest(); // Remove checkVersion enqueue request
-      return client;
-    } catch (EnterprisePluginException | InterruptedException e) {
-      throw new IllegalStateException(
-          "Test version support should always work from enqueue response", e);
+      // Remove checkVersion enqueue request:
+      server.takeRequest(1, TimeUnit.SECONDS);
+      return testFunction.apply(server, client);
     }
   }
 
   @Test
-  void UploadPackage_ContentType_OctetStream()
-      throws EnterprisePluginException, InterruptedException {
-    MockWebServer server =
-        createMockWebServer(new MockResponse().setResponseCode(HttpURLConnection.HTTP_OK));
-    HttpEnterpriseClient client = createHttpEnterpriseClient(server);
-    client.uploadPackage(ARTIFACT_ID, ARTIFACT_FILE);
-    assertEquals("application/octet-stream", server.takeRequest().getHeader("Content-Type"));
+  void UploadPackage_ContentType_OctetStream() throws Exception {
+    withMockWebServer(
+        new MockResponse().setResponseCode(HttpURLConnection.HTTP_OK),
+        (server, client) -> {
+          client.uploadPackage(ARTIFACT_ID, ARTIFACT_FILE);
+          assertEquals(
+              "application/octet-stream",
+              server.takeRequest(1, TimeUnit.SECONDS).getHeader("Content-Type"));
+          return null;
+        });
   }
 
   @Test
-  void UploadPackage_ContentLength_MavenSampleLength()
-      throws EnterprisePluginException, InterruptedException {
-    MockWebServer server =
-        createMockWebServer(new MockResponse().setResponseCode(HttpURLConnection.HTTP_OK));
-    HttpEnterpriseClient client = createHttpEnterpriseClient(server);
-    client.uploadPackage(ARTIFACT_ID, ARTIFACT_FILE);
-    assertEquals(
-        ARTIFACT_FILE.length(), Long.valueOf(server.takeRequest().getHeader("Content-Length")));
+  void UploadPackage_ContentLength_MavenSampleLength() throws Exception {
+    withMockWebServer(
+        new MockResponse().setResponseCode(HttpURLConnection.HTTP_OK),
+        (server, client) -> {
+          client.uploadPackage(ARTIFACT_ID, ARTIFACT_FILE);
+          assertEquals(
+              ARTIFACT_FILE.length(),
+              Long.valueOf(server.takeRequest(1, TimeUnit.SECONDS).getHeader("Content-Length")));
+          return null;
+        });
   }
 
-  private EnterprisePluginException UploadPackage_Status_EnterpriseClientException(int code) {
-    MockWebServer server = createMockWebServer(new MockResponse().setResponseCode(code));
-    HttpEnterpriseClient client = createHttpEnterpriseClient(server);
-    return assertThrows(
-        EnterprisePluginException.class, () -> client.uploadPackage(ARTIFACT_ID, ARTIFACT_FILE));
+  private EnterprisePluginException UploadPackage_Status_EnterpriseClientException(int code)
+      throws Exception {
+    return withMockWebServer(
+        new MockResponse().setResponseCode(code),
+        (server, client) ->
+            assertThrows(
+                EnterprisePluginException.class,
+                () -> client.uploadPackage(ARTIFACT_ID, ARTIFACT_FILE)));
   }
 
   @Test
-  void UploadPackage_StatusNotFound_EnterpriseClientException() {
+  void UploadPackage_StatusNotFound_EnterpriseClientException() throws Exception {
     EnterprisePluginException e =
         UploadPackage_Status_EnterpriseClientException(HttpURLConnection.HTTP_NOT_FOUND);
     assertThat(e, instanceOf(PackageNotFoundException.class));
   }
 
   @Test
-  void UploadPackage_StatusEntityTooLarge_EnterpriseClientException() {
+  void UploadPackage_StatusEntityTooLarge_EnterpriseClientException() throws Exception {
     EnterprisePluginException e =
         UploadPackage_Status_EnterpriseClientException(HttpURLConnection.HTTP_ENTITY_TOO_LARGE);
     assertThat(e, instanceOf(InvalidApiCallException.class));
@@ -103,14 +118,14 @@ public class HttpEnterpriseClientTest {
   }
 
   @Test
-  void UploadPackage_StatusUnauthorized_EnterpriseClientException() {
+  void UploadPackage_StatusUnauthorized_EnterpriseClientException() throws Exception {
     EnterprisePluginException e =
         UploadPackage_Status_EnterpriseClientException(HttpURLConnection.HTTP_UNAUTHORIZED);
     assertThat(e, instanceOf(UnauthorizedApiCallException.class));
   }
 
   @Test
-  void UploadPackage_StatusUnknown_EnterpriseClientException() {
+  void UploadPackage_StatusUnknown_EnterpriseClientException() throws Exception {
     EnterprisePluginException e = UploadPackage_Status_EnterpriseClientException(666);
     assertThat(e, instanceOf(UnhandledApiCallException.class));
     assertThat(e.getMessage(), containsString("666"));
