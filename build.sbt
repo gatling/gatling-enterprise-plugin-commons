@@ -12,7 +12,6 @@ inScope(Global) {
 }
 
 val junitVersion = "5.8.2"
-val okHttp3Version = "3.14.9" // SBT plugins cannot depend on an higher version, see: https://github.com/sbt/sbt/issues/5569
 
 lazy val root = (project in file("."))
   .enablePlugins(GatlingOssPlugin)
@@ -24,7 +23,7 @@ lazy val root = (project in file("."))
       "org.junit.jupiter"          % "junit-jupiter-engine" % junitVersion                     % Test,
       "org.junit.jupiter"          % "junit-jupiter-api"    % junitVersion                     % Test,
       "net.aichler"                % "jupiter-interface"    % JupiterKeys.jupiterVersion.value % Test,
-      "com.squareup.okhttp3"       % "mockwebserver"        % okHttp3Version                   % Test,
+      "com.squareup.okhttp3"       % "mockwebserver"        % "4.9.3"                          % Test,
       "com.fasterxml.jackson.core" % "jackson-databind"     % "2.13.3",
       "org.apache.commons"         % "commons-exec"         % "1.3",
       "io.gatling"                 % "gatling-scanner"      % "1.1.0"

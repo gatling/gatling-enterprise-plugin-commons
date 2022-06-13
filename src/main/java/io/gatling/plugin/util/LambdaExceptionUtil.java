@@ -24,7 +24,17 @@ public final class LambdaExceptionUtil {
   }
 
   @FunctionalInterface
+  public interface BiConsumerWithExceptions<T, U, E extends Exception> {
+    void accept(T t, U u) throws E;
+  }
+
+  @FunctionalInterface
   public interface FunctionWithExceptions<T, R, E extends Exception> {
     R apply(T t) throws E;
+  }
+
+  @FunctionalInterface
+  public interface BiFunctionWithExceptions<T, U, R, E extends Exception> {
+    R apply(T t, U u) throws E;
   }
 }
