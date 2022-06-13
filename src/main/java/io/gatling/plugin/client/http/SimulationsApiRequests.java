@@ -21,18 +21,21 @@ import io.gatling.plugin.exceptions.EnterprisePluginException;
 import io.gatling.plugin.exceptions.SimulationNotFoundException;
 import io.gatling.plugin.model.*;
 import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.List;
 import java.util.UUID;
 
 class SimulationsApiRequests extends AbstractApiRequests {
 
-  SimulationsApiRequests(String baseUrl, String token) {
+  private static final ApiPath SIM_PATH = ApiPath.of("simulations");
+
+  SimulationsApiRequests(URL baseUrl, String token) {
     super(baseUrl, token);
   }
 
   Simulation getSimulation(UUID simulationId) throws EnterprisePluginException {
     return getJson(
-        "/simulations/" + simulationId.toString(),
+        SIM_PATH.append(simulationId.toString()),
         Simulation.class,
         response -> {
           if (response.code == HttpURLConnection.HTTP_NOT_FOUND) {
@@ -42,27 +45,26 @@ class SimulationsApiRequests extends AbstractApiRequests {
   }
 
   Simulations listSimulations() throws EnterprisePluginException {
-    List<Simulation> data = getJson("/simulations", new TypeReference<List<Simulation>>() {});
+    List<Simulation> data = getJson(SIM_PATH, new TypeReference<List<Simulation>>() {});
     return new Simulations(data);
   }
 
   Simulation createSimulation(SimulationCreationPayload simulation)
       throws EnterprisePluginException {
-    return postJson("/simulations", simulation, Simulation.class);
+    return postJson(SIM_PATH, simulation, Simulation.class);
   }
 
   RunSummary startSimulation(UUID simulationId, StartOptions options)
       throws EnterprisePluginException {
-    return postJson(
-        "/simulations/start?simulation=" + urlEncode(simulationId.toString()),
-        options,
-        RunSummary.class);
+    final ApiPath path =
+        SIM_PATH.append("start").addQueryParam("simulation", simulationId.toString());
+    return postJson(path, options, RunSummary.class);
   }
 
   SimulationClassName updateSimulationClassName(UUID simulationId, String className)
       throws EnterprisePluginException {
     return putJson(
-        "/simulations/" + simulationId.toString() + "/classname",
+        SIM_PATH.append(simulationId.toString(), "classname"),
         new SimulationClassName(className),
         SimulationClassName.class);
   }

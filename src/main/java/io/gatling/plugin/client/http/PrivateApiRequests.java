@@ -19,17 +19,22 @@ package io.gatling.plugin.client.http;
 import io.gatling.plugin.exceptions.EnterprisePluginException;
 import io.gatling.plugin.exceptions.UnsupportedClientException;
 import java.net.HttpURLConnection;
+import java.net.URL;
 
 class PrivateApiRequests extends AbstractApiRequests {
 
-  PrivateApiRequests(String baseUrl, String token) {
+  PrivateApiRequests(URL baseUrl, String token) {
     super(baseUrl, token);
   }
 
   /** @throws UnsupportedClientException if this client version is outdated */
   void checkVersionSupport(String client, String version) throws EnterprisePluginException {
+    ApiPath path =
+        ApiPath.of("compatibility")
+            .addQueryParam("clientName", client)
+            .addQueryParam("version", version);
     get(
-        "/compatibility?clientName=" + urlEncode(client) + "&version=" + urlEncode(version),
+        path,
         response -> {
           if (response.code == HttpURLConnection.HTTP_BAD_REQUEST) {
             throw new UnsupportedClientException(client, version);
