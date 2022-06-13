@@ -19,6 +19,7 @@ package io.gatling.plugin.client.http;
 import io.gatling.plugin.client.EnterpriseClient;
 import io.gatling.plugin.exceptions.ApiCallIOException;
 import io.gatling.plugin.exceptions.EnterprisePluginException;
+import io.gatling.plugin.exceptions.InvalidBaseUrlException;
 import io.gatling.plugin.exceptions.PackageNotFoundException;
 import io.gatling.plugin.model.*;
 import io.gatling.plugin.util.checksum.PkgChecksum;
@@ -39,12 +40,11 @@ public final class HttpEnterpriseClient implements EnterpriseClient {
   private final SimulationsApiRequests simulationsApiRequests;
   private final TeamsApiRequests teamsApiRequests;
 
-  public HttpEnterpriseClient(URL url, String token, String client, String version)
+  public HttpEnterpriseClient(URL baseUrl, String token, String client, String version)
       throws EnterprisePluginException {
-    if (!"http".equals(url.getProtocol()) && !"https".equals(url.getProtocol())) {
-      throw new IllegalArgumentException("'" + url + "' is not a valid HTTP or HTTPS URL");
+    if (!"http".equals(baseUrl.getProtocol()) && !"https".equals(baseUrl.getProtocol())) {
+      throw new InvalidBaseUrlException(baseUrl);
     }
-    final String baseUrl = url.toString();
 
     infoApiRequests = new InfoApiRequests(baseUrl, token);
     packagesApiRequests = new PackagesApiRequests(baseUrl, token);

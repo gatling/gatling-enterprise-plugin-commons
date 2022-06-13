@@ -18,14 +18,15 @@ package io.gatling.plugin.client.http;
 
 import io.gatling.plugin.exceptions.EnterprisePluginException;
 import io.gatling.plugin.model.Teams;
+import java.net.URL;
 
 class TeamsApiRequests extends AbstractApiRequests {
 
-  TeamsApiRequests(String baseUrl, String token) {
+  TeamsApiRequests(URL baseUrl, String token) {
     super(baseUrl, token);
   }
 
   Teams listTeams() throws EnterprisePluginException {
-    return getJson("/teams", Teams.class);
+    return getJson(ApiPath.of("teams"), Teams.class);
   }
 }

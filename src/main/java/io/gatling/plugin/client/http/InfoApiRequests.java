@@ -18,14 +18,15 @@ package io.gatling.plugin.client.http;
 
 import io.gatling.plugin.exceptions.EnterprisePluginException;
 import io.gatling.plugin.model.ServerInformation;
+import java.net.URL;
 
 public class InfoApiRequests extends AbstractApiRequests {
 
-  InfoApiRequests(String baseUrl, String token) {
+  InfoApiRequests(URL baseUrl, String token) {
     super(baseUrl, token);
   }
 
   ServerInformation getServerInformation() throws EnterprisePluginException {
-    return getJson("/info", ServerInformation.class);
+    return getJson(ApiPath.of("info"), ServerInformation.class);
   }
 }

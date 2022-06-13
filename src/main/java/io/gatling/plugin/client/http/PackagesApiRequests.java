@@ -25,21 +25,24 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.URL;
 import java.nio.file.Files;
 import java.util.UUID;
 
 class PackagesApiRequests extends AbstractApiRequests {
-  PackagesApiRequests(String baseUrl, String token) {
+  private static final ApiPath PKG_PATH = ApiPath.of("artifacts");
+
+  PackagesApiRequests(URL baseUrl, String token) {
     super(baseUrl, token);
   }
 
   Packages listPackages() throws EnterprisePluginException {
-    return getJson("/artifacts", Packages.class);
+    return getJson(ApiPath.of("artifacts"), Packages.class);
   }
 
   Pkg readPackage(UUID packageId) throws EnterprisePluginException {
     return getJson(
-        "/artifacts/" + packageId.toString(),
+        PKG_PATH.append(packageId.toString()),
         Pkg.class,
         response -> {
           if (response.code == HttpURLConnection.HTTP_NOT_FOUND) {
@@ -49,13 +52,14 @@ class PackagesApiRequests extends AbstractApiRequests {
   }
 
   Pkg createPackage(PackageCreationPayload pkg) throws EnterprisePluginException {
-    return postJson("/artifacts", pkg, Pkg.class);
+    return postJson(PKG_PATH, pkg, Pkg.class);
   }
 
   long uploadPackage(UUID packageId, File file) throws EnterprisePluginException {
-    return executeRequest(
-        HTTP_PUT_METHOD,
-        "/artifacts/" + packageId.toString() + "/content?filename=" + urlEncode(file.getName()),
+    final ApiPath path =
+        PKG_PATH.append(packageId.toString(), "content").addQueryParam("filename", file.getName());
+    put(
+        path,
         connection -> {
           connection.setRequestProperty(CONTENT_TYPE_HEADER, OCTET_STREAM_MEDIA_TYPE);
           connection.setDoOutput(true);
@@ -65,7 +69,6 @@ class PackagesApiRequests extends AbstractApiRequests {
             throw new ApiCallIOException(e);
           }
         },
-        response -> file.length(),
         response -> {
           if (response.code == HttpURLConnection.HTTP_ENTITY_TOO_LARGE) {
             throw new InvalidApiCallException("Package exceeds maximum allowed size (5 GB)");
@@ -74,5 +77,6 @@ class PackagesApiRequests extends AbstractApiRequests {
             throw new PackageNotFoundException(packageId);
           }
         });
+    return file.length();
   }
 }

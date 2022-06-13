@@ -14,19 +14,13 @@
  * limitations under the License.
  */
 
-package io.gatling.plugin.client.http;
+package io.gatling.plugin.exceptions;
 
-import io.gatling.plugin.exceptions.EnterprisePluginException;
-import io.gatling.plugin.model.Pools;
 import java.net.URL;
 
-class PoolsApiRequests extends AbstractApiRequests {
+public class InvalidBaseUrlException extends EnterprisePluginException {
 
-  PoolsApiRequests(URL baseUrl, String token) {
-    super(baseUrl, token);
-  }
-
-  Pools listPools() throws EnterprisePluginException {
-    return getJson(ApiPath.of("pools"), Pools.class);
+  public InvalidBaseUrlException(URL baseUrl) {
+    super("'" + baseUrl.toExternalForm() + "' is not a valid HTTP or HTTPS URL");
   }
 }
