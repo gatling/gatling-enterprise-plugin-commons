@@ -41,8 +41,12 @@ abstract class AbstractApiRequests {
   private static final String ACCEPT_HEADER = "Accept";
   protected static final String CONTENT_TYPE_HEADER = "Content-Type";
 
+  private static final String CONNECTION_HEADER = "Connection";
+
   protected static final String OCTET_STREAM_MEDIA_TYPE = "application/octet-stream";
   protected static final String JSON_MEDIA_TYPE = "application/json";
+
+  protected static final String CLOSE = "close";
 
   private static final int DEFAULT_TIMEOUT_MS = 10_000;
 
@@ -157,11 +161,15 @@ abstract class AbstractApiRequests {
       beforeRequest.accept(connection);
       connection.connect();
 
-      final HttpResponse response = readResponse(connection);
+      try {
+        final HttpResponse response = readResponse(connection);
 
-      validateResponse.accept(response);
-      defaultValidateResponse(response);
-      return response;
+        validateResponse.accept(response);
+        defaultValidateResponse(response);
+        return response;
+      } finally {
+        connection.disconnect();
+      }
     } catch (IOException e) {
       throw new ApiCallIOException(e);
     }
@@ -174,6 +182,8 @@ abstract class AbstractApiRequests {
       connection.setRequestMethod(method);
       connection.setRequestProperty(AUTHORIZATION_HEADER, token);
       connection.setRequestProperty(ACCEPT_HEADER, JSON_MEDIA_TYPE);
+      connection.setRequestProperty(AUTHORIZATION_HEADER, token);
+      connection.setRequestProperty(CONNECTION_HEADER, CLOSE);
       connection.setConnectTimeout(DEFAULT_TIMEOUT_MS);
       connection.setReadTimeout(DEFAULT_TIMEOUT_MS);
       return connection;
