@@ -93,7 +93,7 @@ public class HttpEnterpriseClientTest {
         (server, client) -> {
           final ServerInformation response = client.getServerInformation();
           final RecordedRequest record = server.takeRequest(1, TimeUnit.SECONDS);
-          assertEquals("/info", record.getPath());
+          assertEquals("/api/public/info", record.getPath());
           assertEquals(AUTH_TOKEN, record.getHeader("Authorization"));
           assertEquals(expectedResponse, response);
           return null;
@@ -125,7 +125,7 @@ public class HttpEnterpriseClientTest {
         (server, client) -> {
           final List<PkgIndex> response = client.getPackages();
           final RecordedRequest record = server.takeRequest(1, TimeUnit.SECONDS);
-          assertEquals("/artifacts", record.getPath());
+          assertEquals("/api/public/artifacts", record.getPath());
           assertEquals(AUTH_TOKEN, record.getHeader("Authorization"));
           assertEquals(expectedResponse, response);
           return null;
@@ -149,7 +149,7 @@ public class HttpEnterpriseClientTest {
               client.createPackage(
                   "test package name", UUID.fromString("00000000-0000-0000-0000-200000000000"));
           final RecordedRequest record = server.takeRequest(1, TimeUnit.SECONDS);
-          assertEquals("/artifacts", record.getPath());
+          assertEquals("/api/public/artifacts", record.getPath());
           assertEquals(AUTH_TOKEN, record.getHeader("Authorization"));
           assertJsonEquals(expectedRequest, record.getBody().readUtf8());
           assertEquals(expectedResponse, response);
@@ -168,7 +168,10 @@ public class HttpEnterpriseClientTest {
           assertEquals(ARTIFACT_FILE.length(), Long.valueOf(record.getHeader("Content-Length")));
           assertEquals(ARTIFACT_FILE.length(), record.getBodySize());
           assertEquals(
-              "/artifacts/" + ARTIFACT_ID + "/content?filename=" + ARTIFACT_FILE.getName(),
+              "/api/public/artifacts/"
+                  + ARTIFACT_ID
+                  + "/content?filename="
+                  + ARTIFACT_FILE.getName(),
               record.getPath());
           return null;
         });
