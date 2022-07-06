@@ -40,19 +40,27 @@ public final class HttpEnterpriseClient implements EnterpriseClient {
   private final SimulationsApiRequests simulationsApiRequests;
   private final TeamsApiRequests teamsApiRequests;
 
+  /**
+   * @param baseUrl Base URL for the Gatling Enterprise server, e.g. {@code
+   *     https://cloud.gatling.io}
+   * @param token Authentication token used to access the public API
+   * @param client Name of the calling client, used to verify if it is supported by the API
+   * @param version Version of the calling client, used to verify if it is supported by the API
+   */
   public HttpEnterpriseClient(URL baseUrl, String token, String client, String version)
       throws EnterprisePluginException {
     if (!"http".equals(baseUrl.getProtocol()) && !"https".equals(baseUrl.getProtocol())) {
       throw new InvalidBaseUrlException(baseUrl);
     }
+    final URL publicApiBaseUrl = ApiPath.of("api", "public").buildUrl(baseUrl);
 
-    infoApiRequests = new InfoApiRequests(baseUrl, token);
-    packagesApiRequests = new PackagesApiRequests(baseUrl, token);
-    poolsApiRequests = new PoolsApiRequests(baseUrl, token);
-    simulationsApiRequests = new SimulationsApiRequests(baseUrl, token);
-    teamsApiRequests = new TeamsApiRequests(baseUrl, token);
+    infoApiRequests = new InfoApiRequests(publicApiBaseUrl, token);
+    packagesApiRequests = new PackagesApiRequests(publicApiBaseUrl, token);
+    poolsApiRequests = new PoolsApiRequests(publicApiBaseUrl, token);
+    simulationsApiRequests = new SimulationsApiRequests(publicApiBaseUrl, token);
+    teamsApiRequests = new TeamsApiRequests(publicApiBaseUrl, token);
 
-    new PrivateApiRequests(baseUrl, token).checkVersionSupport(client, version);
+    new PrivateApiRequests(publicApiBaseUrl, token).checkVersionSupport(client, version);
   }
 
   @Override
