@@ -217,7 +217,7 @@ public final class Fork {
 
     Process process =
         new ProcessBuilder(buildCommand()).directory(workingDirectory).inheritIO().start();
-
+    process.getOutputStream().close();
     int exitValue = process.waitFor();
     if (exitValue != 0) {
       throw new IllegalStateException("command line returned non-zero value:" + exitValue);
