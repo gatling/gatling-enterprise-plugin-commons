@@ -25,7 +25,6 @@ lazy val root = (project in file("."))
       "net.aichler"                % "jupiter-interface"    % JupiterKeys.jupiterVersion.value % Test,
       "com.squareup.okhttp3"       % "mockwebserver"        % "4.9.3"                          % Test,
       "com.fasterxml.jackson.core" % "jackson-databind"     % "2.13.3",
-      "org.apache.commons"         % "commons-exec"         % "1.3",
       "io.gatling"                 % "gatling-scanner"      % "1.1.0"
     ),
     spotlessJava := JavaConfig(

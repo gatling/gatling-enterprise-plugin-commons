@@ -17,10 +17,7 @@
 package io.gatling.plugin.util;
 
 import io.gatling.plugin.io.PluginLogger;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -30,7 +27,6 @@ import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
-import org.apache.commons.exec.*;
 
 public final class Fork {
 
@@ -219,28 +215,18 @@ public final class Fork {
     this.jvmArgs.add(
         createBooterJar(classpath, MainWithArgsInFile.class.getName()).getCanonicalPath());
 
-    List<String> command = buildCommand();
-
-    Executor exec = new DefaultExecutor();
-    exec.setStreamHandler(new PumpStreamHandler(System.out, System.err, System.in));
-    exec.setProcessDestroyer(new ShutdownHookProcessDestroyer());
-    if (workingDirectory != null) {
-      exec.setWorkingDirectory(workingDirectory);
-    }
-
-    CommandLine cl = new CommandLine(javaExecutable);
-    for (String arg : command) {
-      cl.addArgument(arg, false);
-    }
-
-    int exitValue = exec.execute(cl);
+    Process process =
+        new ProcessBuilder(buildCommand()).directory(workingDirectory).inheritIO().start();
+    process.getOutputStream().close();
+    int exitValue = process.waitFor();
     if (exitValue != 0) {
       throw new IllegalStateException("command line returned non-zero value:" + exitValue);
     }
   }
 
   private List<String> buildCommand() throws IOException {
-    ArrayList<String> command = new ArrayList<>(jvmArgs.size() + 2);
+    ArrayList<String> command = new ArrayList<>(jvmArgs.size() + 3);
+    command.add(javaExecutable);
     command.addAll(jvmArgs);
     command.add(mainClassName);
     command.add(createArgFile(args).getCanonicalPath());
