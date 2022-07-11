@@ -30,6 +30,13 @@ import java.util.jar.Manifest;
 
 public final class Fork {
 
+  public static final class ForkException extends Exception {
+    public final int exitValue;
+    public ForkException(int exitValue) {
+      this.exitValue = exitValue;
+    }
+  }
+
   private static final String ARG_FILE_PREFIX = "gatling-";
   private static final String ARG_FILE_SUFFIX = ".args";
   private static final String GATLING_MANIFEST_VALUE = "GATLING_ZINC";
@@ -220,7 +227,7 @@ public final class Fork {
     process.getOutputStream().close();
     int exitValue = process.waitFor();
     if (exitValue != 0) {
-      throw new IllegalStateException("command line returned non-zero value:" + exitValue);
+      throw new ForkException(exitValue);
     }
   }
 
