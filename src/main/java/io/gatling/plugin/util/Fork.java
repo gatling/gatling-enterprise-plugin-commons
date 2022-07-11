@@ -32,6 +32,7 @@ public final class Fork {
 
   public static final class ForkException extends Exception {
     public final int exitValue;
+
     public ForkException(int exitValue) {
       this.exitValue = exitValue;
     }
