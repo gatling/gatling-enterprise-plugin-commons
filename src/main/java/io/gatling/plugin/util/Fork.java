@@ -42,7 +42,7 @@ public final class Fork {
   private static final String ARG_FILE_SUFFIX = ".args";
   private static final String GATLING_MANIFEST_VALUE = "GATLING_ZINC";
 
-  private final String javaExecutable;
+  private final File javaExecutable;
   private final String mainClassName;
   private final List<String> classpath;
   private final boolean propagateSystemProperties;
@@ -57,7 +57,7 @@ public final class Fork {
       List<String> classpath,
       List<String> jvmArgs,
       List<String> args,
-      String javaExecutable,
+      File javaExecutable,
       boolean propagateSystemProperties,
       PluginLogger log) {
 
@@ -77,7 +77,7 @@ public final class Fork {
       List<String> classpath,
       List<String> jvmArgs,
       List<String> args,
-      String javaExecutable,
+      File javaExecutable,
       boolean propagateSystemProperties,
       PluginLogger log,
       File workingDirectory) {
@@ -92,10 +92,8 @@ public final class Fork {
     this.workingDirectory = workingDirectory;
   }
 
-  public static boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().contains("win");
-
-  private String toWindowsShortName(String value) {
-    if (IS_WINDOWS) {
+  public static String toWindowsShortName(String value) {
+    if (Os.IS_WINDOWS) {
       int programFilesIndex = value.indexOf("Program Files");
       if (programFilesIndex >= 0) {
         // Could be "Program Files" or "Program Files (x86)"
@@ -205,7 +203,7 @@ public final class Fork {
                     + name
                     + "' contains a whitespace and can't be propagated");
 
-          } else if (IS_WINDOWS && value.contains(" ")) {
+          } else if (Os.IS_WINDOWS && value.contains(" ")) {
             log.error(
                 "System property value '"
                     + value
@@ -234,7 +232,7 @@ public final class Fork {
 
   private List<String> buildCommand() throws IOException {
     ArrayList<String> command = new ArrayList<>(jvmArgs.size() + 3);
-    command.add(javaExecutable);
+    command.add(toWindowsShortName(javaExecutable.getCanonicalPath()));
     command.addAll(jvmArgs);
     command.add(mainClassName);
     command.add(createArgFile(args).getCanonicalPath());
