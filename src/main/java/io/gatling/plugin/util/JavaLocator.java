@@ -17,6 +17,8 @@
 package io.gatling.plugin.util;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public final class JavaLocator {
   private JavaLocator() {}
@@ -27,21 +29,19 @@ public final class JavaLocator {
 
     String javaHomeSystemProperty = System.getProperty("java.home");
     if (javaHomeSystemProperty != null) {
-      if (javaHomeSystemProperty.endsWith(File.separator + "jre")) {
+      Path javaHomePath = Paths.get(javaHomeSystemProperty);
+      if (javaHomePath.endsWith("jre")) {
         // Old JDK versions contain a JRE. We might be pointing to that.
         // We want to try to use the JDK instead as we need javac in order to compile mixed
         // Java-Scala projects.
-        File javaExec =
-            new File(
-                javaHomeSystemProperty + File.separator + ".." + File.separator + "bin",
-                javaCommand);
+        File javaExec = javaHomePath.resolveSibling("bin").resolve(javaCommand).toFile();
         if (javaExec.isFile()) {
           return javaExec;
         }
       }
 
       // old standalone JRE or modern JDK
-      File javaExec = new File(javaHomeSystemProperty + File.separator + "bin", javaCommand);
+      File javaExec = javaHomePath.resolve("bin").resolve(javaCommand).toFile();
       if (javaExec.isFile()) {
         return javaExec;
       } else {
@@ -57,7 +57,7 @@ public final class JavaLocator {
           "Couldn't locate java, try setting JAVA_HOME environment variable.");
     }
 
-    File javaExec = new File(javaHomeEnvVar + File.separator + "bin", javaCommand);
+    File javaExec = Paths.get(javaHomeEnvVar).resolve("bin").resolve(javaCommand).toFile();
     if (javaExec.isFile()) {
       return javaExec;
     } else {
